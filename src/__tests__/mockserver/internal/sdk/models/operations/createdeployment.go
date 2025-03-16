@@ -1385,6 +1385,30 @@ func (o *Build) GetEnv() []string {
 }
 
 type Builds struct {
+	Use    string         `json:"use"`
+	Src    *string        `json:"src,omitempty"`
+	Config map[string]any `json:"config,omitempty"`
+}
+
+func (o *Builds) GetUse() string {
+	if o == nil {
+		return ""
+	}
+	return o.Use
+}
+
+func (o *Builds) GetSrc() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Src
+}
+
+func (o *Builds) GetConfig() map[string]any {
+	if o == nil {
+		return nil
+	}
+	return o.Config
 }
 
 type CreateDeploymentFramework string
@@ -2045,8 +2069,8 @@ func (o *Creator) GetAvatar() *string {
 type CreateDeploymentReadyState string
 
 const (
-	CreateDeploymentReadyStateError        CreateDeploymentReadyState = "ERROR"
 	CreateDeploymentReadyStateBuilding     CreateDeploymentReadyState = "BUILDING"
+	CreateDeploymentReadyStateError        CreateDeploymentReadyState = "ERROR"
 	CreateDeploymentReadyStateInitializing CreateDeploymentReadyState = "INITIALIZING"
 	CreateDeploymentReadyStateReady        CreateDeploymentReadyState = "READY"
 )
@@ -2060,9 +2084,9 @@ func (e *CreateDeploymentReadyState) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "ERROR":
-		fallthrough
 	case "BUILDING":
+		fallthrough
+	case "ERROR":
 		fallthrough
 	case "INITIALIZING":
 		fallthrough
@@ -2095,19 +2119,12 @@ func (o *CreateDeploymentOutput) GetFunctionName() string {
 
 // Lambdas - A partial representation of a Build used by the deployment endpoint.
 type Lambdas struct {
-	CreatedAt    *float64                    `json:"createdAt,omitempty"`
 	ID           *string                     `json:"id,omitempty"`
-	ReadyState   *CreateDeploymentReadyState `json:"readyState,omitempty"`
+	CreatedAt    *float64                    `json:"createdAt,omitempty"`
 	Entrypoint   *string                     `json:"entrypoint,omitempty"`
+	ReadyState   *CreateDeploymentReadyState `json:"readyState,omitempty"`
 	ReadyStateAt *float64                    `json:"readyStateAt,omitempty"`
 	Output       []CreateDeploymentOutput    `json:"output"`
-}
-
-func (o *Lambdas) GetCreatedAt() *float64 {
-	if o == nil {
-		return nil
-	}
-	return o.CreatedAt
 }
 
 func (o *Lambdas) GetID() *string {
@@ -2117,11 +2134,11 @@ func (o *Lambdas) GetID() *string {
 	return o.ID
 }
 
-func (o *Lambdas) GetReadyState() *CreateDeploymentReadyState {
+func (o *Lambdas) GetCreatedAt() *float64 {
 	if o == nil {
 		return nil
 	}
-	return o.ReadyState
+	return o.CreatedAt
 }
 
 func (o *Lambdas) GetEntrypoint() *string {
@@ -2129,6 +2146,13 @@ func (o *Lambdas) GetEntrypoint() *string {
 		return nil
 	}
 	return o.Entrypoint
+}
+
+func (o *Lambdas) GetReadyState() *CreateDeploymentReadyState {
+	if o == nil {
+		return nil
+	}
+	return o.ReadyState
 }
 
 func (o *Lambdas) GetReadyStateAt() *float64 {
@@ -3833,8 +3857,8 @@ func (u CreateDeploymentMicrofrontends) MarshalJSON() ([]byte, error) {
 type FunctionType string
 
 const (
-	FunctionTypeStandard FunctionType = "standard"
 	FunctionTypeFluid    FunctionType = "fluid"
+	FunctionTypeStandard FunctionType = "standard"
 )
 
 func (e FunctionType) ToPointer() *FunctionType {
@@ -3846,9 +3870,9 @@ func (e *FunctionType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "standard":
-		fallthrough
 	case "fluid":
+		fallthrough
+	case "standard":
 		*e = FunctionType(v)
 		return nil
 	default:
@@ -3859,8 +3883,8 @@ func (e *FunctionType) UnmarshalJSON(data []byte) error {
 type FunctionMemoryType string
 
 const (
-	FunctionMemoryTypeStandardLegacy FunctionMemoryType = "standard_legacy"
 	FunctionMemoryTypeStandard       FunctionMemoryType = "standard"
+	FunctionMemoryTypeStandardLegacy FunctionMemoryType = "standard_legacy"
 	FunctionMemoryTypePerformance    FunctionMemoryType = "performance"
 )
 
@@ -3873,9 +3897,9 @@ func (e *FunctionMemoryType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "standard_legacy":
-		fallthrough
 	case "standard":
+		fallthrough
+	case "standard_legacy":
 		fallthrough
 	case "performance":
 		*e = FunctionMemoryType(v)
@@ -4014,8 +4038,8 @@ const (
 	RoutesHandleFilesystem RoutesHandle = "filesystem"
 	RoutesHandleHit        RoutesHandle = "hit"
 	RoutesHandleMiss       RoutesHandle = "miss"
-	RoutesHandleResource   RoutesHandle = "resource"
 	RoutesHandleRewrite    RoutesHandle = "rewrite"
+	RoutesHandleResource   RoutesHandle = "resource"
 )
 
 func (e RoutesHandle) ToPointer() *RoutesHandle {
@@ -4035,9 +4059,9 @@ func (e *RoutesHandle) UnmarshalJSON(data []byte) error {
 		fallthrough
 	case "miss":
 		fallthrough
-	case "resource":
-		fallthrough
 	case "rewrite":
+		fallthrough
+	case "resource":
 		*e = RoutesHandle(v)
 		return nil
 	default:
@@ -4685,8 +4709,8 @@ func (e *CreateDeploymentGitRepoDeploymentsType) UnmarshalJSON(data []byte) erro
 type CreateDeploymentGitRepoOwnerType string
 
 const (
-	CreateDeploymentGitRepoOwnerTypeUser CreateDeploymentGitRepoOwnerType = "user"
 	CreateDeploymentGitRepoOwnerTypeTeam CreateDeploymentGitRepoOwnerType = "team"
+	CreateDeploymentGitRepoOwnerTypeUser CreateDeploymentGitRepoOwnerType = "user"
 )
 
 func (e CreateDeploymentGitRepoOwnerType) ToPointer() *CreateDeploymentGitRepoOwnerType {
@@ -4698,9 +4722,9 @@ func (e *CreateDeploymentGitRepoOwnerType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "user":
-		fallthrough
 	case "team":
+		fallthrough
+	case "user":
 		*e = CreateDeploymentGitRepoOwnerType(v)
 		return nil
 	default:
@@ -4817,8 +4841,8 @@ func (e *CreateDeploymentGitRepoType) UnmarshalJSON(data []byte) error {
 type GitRepoOwnerType string
 
 const (
-	GitRepoOwnerTypeUser GitRepoOwnerType = "user"
 	GitRepoOwnerTypeTeam GitRepoOwnerType = "team"
+	GitRepoOwnerTypeUser GitRepoOwnerType = "user"
 )
 
 func (e GitRepoOwnerType) ToPointer() *GitRepoOwnerType {
@@ -4830,9 +4854,9 @@ func (e *GitRepoOwnerType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "user":
-		fallthrough
 	case "team":
+		fallthrough
+	case "user":
 		*e = GitRepoOwnerType(v)
 		return nil
 	default:
@@ -4949,8 +4973,8 @@ func (e *GitRepoType) UnmarshalJSON(data []byte) error {
 type OwnerType string
 
 const (
-	OwnerTypeUser OwnerType = "user"
 	OwnerTypeTeam OwnerType = "team"
+	OwnerTypeUser OwnerType = "user"
 )
 
 func (e OwnerType) ToPointer() *OwnerType {
@@ -4962,9 +4986,9 @@ func (e *OwnerType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "user":
-		fallthrough
 	case "team":
+		fallthrough
+	case "user":
 		*e = OwnerType(v)
 		return nil
 	default:
