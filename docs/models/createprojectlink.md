@@ -12,7 +12,7 @@ const value: models.CreateProjectLink1 = {
       id: "<id>",
       name: "<value>",
       ref: "<value>",
-      url: "https://different-aftermath.name/",
+      url: "https://small-embossing.biz/",
     },
   ],
 };
@@ -27,7 +27,7 @@ const value: models.CreateProjectLink2 = {
       id: "<id>",
       name: "<value>",
       ref: "<value>",
-      url: "https://hopeful-decision.com",
+      url: "https://milky-slide.com/",
     },
   ],
 };
@@ -42,7 +42,22 @@ const value: models.CreateProjectLink3 = {
       id: "<id>",
       name: "<value>",
       ref: "<value>",
-      url: "https://elegant-breastplate.biz/",
+      url: "https://alive-grandpa.com",
+    },
+  ],
+};
+```
+
+### `models.CreateProjectLink4`
+
+```typescript
+const value: models.CreateProjectLink4 = {
+  deployHooks: [
+    {
+      id: "<id>",
+      name: "<value>",
+      ref: "<value>",
+      url: "https://oblong-atrium.name/",
     },
   ],
 };

@@ -9,6 +9,7 @@ import (
 	"mockserver/internal/logging"
 	"mockserver/internal/sdk/models/components"
 	"mockserver/internal/sdk/models/operations"
+	"mockserver/internal/sdk/types"
 	"mockserver/internal/sdk/utils"
 	"mockserver/internal/tracking"
 	"net/http"
@@ -52,8 +53,15 @@ func testPutV1InstallationsIntegrationConfigurationIDResourcesResourceIDExperime
 		return
 	}
 	respBody := &operations.PutV1InstallationsIntegrationConfigurationIDResourcesResourceIDExperimentationEdgeConfigResponseBody{
-		Items:     map[string]*components.EdgeConfigItemValue{},
-		UpdatedAt: 6820.68,
+		Items: map[string]*components.EdgeConfigItemValue{
+			"key": types.Pointer(components.CreateEdgeConfigItemValueBoolean(
+				true,
+			)),
+			"key1": types.Pointer(components.CreateEdgeConfigItemValueStr(
+				"<value>",
+			)),
+		},
+		UpdatedAt: 8687.23,
 		Digest:    "<value>",
 	}
 	respBodyBytes, err := utils.MarshalJSON(respBody, "", true)

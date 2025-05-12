@@ -8,7 +8,7 @@
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments1 = {
   type: "github",
-  repoId: "<id>",
+  repoId: 9384.68,
 };
 ```
 
@@ -26,8 +26,9 @@ const value: models.GetDeploymentGitSourceDeployments2 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments3 = {
-  type: "gitlab",
-  projectId: "<id>",
+  type: "github-custom-host",
+  host: "querulous-completion.net",
+  repoId: 41.29,
 };
 ```
 
@@ -35,8 +36,10 @@ const value: models.GetDeploymentGitSourceDeployments3 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments4 = {
-  type: "bitbucket",
-  repoUuid: "<id>",
+  type: "github-custom-host",
+  host: "cumbersome-discourse.org",
+  org: "<value>",
+  repo: "<value>",
 };
 ```
 
@@ -44,9 +47,8 @@ const value: models.GetDeploymentGitSourceDeployments4 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments5 = {
-  type: "bitbucket",
-  owner: "<value>",
-  slug: "<value>",
+  type: "gitlab",
+  projectId: "<id>",
 };
 ```
 
@@ -54,10 +56,8 @@ const value: models.GetDeploymentGitSourceDeployments5 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments6 = {
-  type: "custom",
-  ref: "<value>",
-  sha: "<value>",
-  gitUrl: "https://accomplished-hippodrome.name/",
+  type: "bitbucket",
+  repoUuid: "<id>",
 };
 ```
 
@@ -65,10 +65,9 @@ const value: models.GetDeploymentGitSourceDeployments6 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments7 = {
-  type: "github",
-  ref: "<value>",
-  sha: "<value>",
-  repoId: 4016.88,
+  type: "bitbucket",
+  owner: "<value>",
+  slug: "<value>",
 };
 ```
 
@@ -76,10 +75,10 @@ const value: models.GetDeploymentGitSourceDeployments7 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments8 = {
-  type: "gitlab",
+  type: "custom",
   ref: "<value>",
   sha: "<value>",
-  projectId: 857.94,
+  gitUrl: "https://red-poppy.com/",
 };
 ```
 
@@ -87,6 +86,40 @@ const value: models.GetDeploymentGitSourceDeployments8 = {
 
 ```typescript
 const value: models.GetDeploymentGitSourceDeployments9 = {
+  type: "github",
+  ref: "<value>",
+  sha: "<value>",
+  repoId: 4015.87,
+};
+```
+
+### `models.GetDeploymentGitSourceDeployments10`
+
+```typescript
+const value: models.GetDeploymentGitSourceDeployments10 = {
+  type: "github-custom-host",
+  host: "discrete-lox.biz",
+  ref: "<value>",
+  sha: "<value>",
+  repoId: 4293.92,
+};
+```
+
+### `models.GetDeploymentGitSourceDeployments11`
+
+```typescript
+const value: models.GetDeploymentGitSourceDeployments11 = {
+  type: "gitlab",
+  ref: "<value>",
+  sha: "<value>",
+  projectId: 8206.04,
+};
+```
+
+### `models.GetDeploymentGitSourceDeployments12`
+
+```typescript
+const value: models.GetDeploymentGitSourceDeployments12 = {
   type: "bitbucket",
   ref: "<value>",
   sha: "<value>",

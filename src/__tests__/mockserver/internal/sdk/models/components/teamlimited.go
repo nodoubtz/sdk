@@ -9,6 +9,32 @@ import (
 	"mockserver/internal/sdk/utils"
 )
 
+type LimitedBy string
+
+const (
+	LimitedByScope LimitedBy = "scope"
+	LimitedByMfa   LimitedBy = "mfa"
+)
+
+func (e LimitedBy) ToPointer() *LimitedBy {
+	return &e
+}
+func (e *LimitedBy) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "scope":
+		fallthrough
+	case "mfa":
+		*e = LimitedBy(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for LimitedBy: %v", v)
+	}
+}
+
 // Connection - Information for the SAML Single Sign-On configuration.
 type Connection struct {
 	// The Identity Provider "type", for example Okta.
@@ -260,14 +286,14 @@ func (e *TeamPermissions) UnmarshalJSON(data []byte) error {
 type Origin string
 
 const (
+	OriginMail              Origin = "mail"
 	OriginLink              Origin = "link"
-	OriginSaml              Origin = "saml"
+	OriginImport            Origin = "import"
+	OriginTeams             Origin = "teams"
 	OriginGithub            Origin = "github"
 	OriginGitlab            Origin = "gitlab"
 	OriginBitbucket         Origin = "bitbucket"
-	OriginMail              Origin = "mail"
-	OriginImport            Origin = "import"
-	OriginTeams             Origin = "teams"
+	OriginSaml              Origin = "saml"
 	OriginDsync             Origin = "dsync"
 	OriginFeedback          Origin = "feedback"
 	OriginOrganizationTeams Origin = "organization-teams"
@@ -282,9 +308,13 @@ func (e *Origin) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
+	case "mail":
+		fallthrough
 	case "link":
 		fallthrough
-	case "saml":
+	case "import":
+		fallthrough
+	case "teams":
 		fallthrough
 	case "github":
 		fallthrough
@@ -292,11 +322,7 @@ func (e *Origin) UnmarshalJSON(data []byte) error {
 		fallthrough
 	case "bitbucket":
 		fallthrough
-	case "mail":
-		fallthrough
-	case "import":
-		fallthrough
-	case "teams":
+	case "saml":
 		fallthrough
 	case "dsync":
 		fallthrough
@@ -468,13 +494,13 @@ func (o *JoinedFrom) GetDsyncConnectedAt() *float64 {
 type Membership struct {
 	UID               *string           `json:"uid,omitempty"`
 	Entitlements      []Entitlements    `json:"entitlements,omitempty"`
+	TeamID            *string           `json:"teamId,omitempty"`
 	Confirmed         bool              `json:"confirmed"`
 	ConfirmedAt       float64           `json:"confirmedAt"`
 	AccessRequestedAt *float64          `json:"accessRequestedAt,omitempty"`
 	Role              Role              `json:"role"`
 	TeamRoles         []TeamRoles       `json:"teamRoles,omitempty"`
 	TeamPermissions   []TeamPermissions `json:"teamPermissions,omitempty"`
-	TeamID            *string           `json:"teamId,omitempty"`
 	CreatedAt         float64           `json:"createdAt"`
 	Created           float64           `json:"created"`
 	JoinedFrom        *JoinedFrom       `json:"joinedFrom,omitempty"`
@@ -492,6 +518,13 @@ func (o *Membership) GetEntitlements() []Entitlements {
 		return nil
 	}
 	return o.Entitlements
+}
+
+func (o *Membership) GetTeamID() *string {
+	if o == nil {
+		return nil
+	}
+	return o.TeamID
 }
 
 func (o *Membership) GetConfirmed() bool {
@@ -536,13 +569,6 @@ func (o *Membership) GetTeamPermissions() []TeamPermissions {
 	return o.TeamPermissions
 }
 
-func (o *Membership) GetTeamID() *string {
-	if o == nil {
-		return nil
-	}
-	return o.TeamID
-}
-
 func (o *Membership) GetCreatedAt() float64 {
 	if o == nil {
 		return 0.0
@@ -566,10 +592,12 @@ func (o *Membership) GetJoinedFrom() *JoinedFrom {
 
 // TeamLimited - A limited form of data representing a Team, due to the authentication token missing privileges to read the full Team data.
 type TeamLimited struct {
-	// Property indicating that this Team data contains only limited information, due to the authentication token missing privileges to read the full Team data. Re-login with the Team's configured SAML Single Sign-On provider in order to upgrade the authentication token with the necessary privileges.
-	Limited bool `json:"limited"`
+	// Property indicating that this Team data contains only limited information, due to the authentication token missing privileges to read the full Team data or due to team having MFA enforced and the user not having MFA enabled. Re-login with the Team's configured SAML Single Sign-On provider in order to upgrade the authentication token with the necessary privileges.
+	Limited   bool        `json:"limited"`
+	LimitedBy []LimitedBy `json:"limitedBy"`
 	// When "Single Sign-On (SAML)" is configured, this object contains information that allows the client-side to identify whether or not this Team has SAML enforced.
-	Saml *Saml `json:"saml,omitempty"`
+	Saml        *Saml `json:"saml,omitempty"`
+	MfaEnforced *bool `json:"mfaEnforced,omitempty"`
 	// The Team's unique identifier.
 	ID string `json:"id"`
 	// The Team's slug, which is unique across the Vercel platform.
@@ -593,11 +621,25 @@ func (o *TeamLimited) GetLimited() bool {
 	return o.Limited
 }
 
+func (o *TeamLimited) GetLimitedBy() []LimitedBy {
+	if o == nil {
+		return []LimitedBy{}
+	}
+	return o.LimitedBy
+}
+
 func (o *TeamLimited) GetSaml() *Saml {
 	if o == nil {
 		return nil
 	}
 	return o.Saml
+}
+
+func (o *TeamLimited) GetMfaEnforced() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.MfaEnforced
 }
 
 func (o *TeamLimited) GetID() string {

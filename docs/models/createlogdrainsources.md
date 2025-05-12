@@ -1,5 +1,7 @@
 # CreateLogDrainSources
 
+The sources from which logs are currently being delivered to this log drain.
+
 ## Example Usage
 
 ```typescript
@@ -11,5 +13,5 @@ let value: CreateLogDrainSources = "static";
 ## Values
 
 ```typescript
-"static" | "lambda" | "build" | "edge" | "external" | "firewall"
+"build" | "edge" | "lambda" | "static" | "external" | "firewall"
 ```

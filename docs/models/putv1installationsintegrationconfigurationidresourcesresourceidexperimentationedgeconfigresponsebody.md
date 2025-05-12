@@ -12,8 +12,10 @@ import {
 let value:
   PutV1InstallationsIntegrationConfigurationIdResourcesResourceIdExperimentationEdgeConfigResponseBody =
     {
-      items: {},
-      updatedAt: 8560.35,
+      items: {
+        "key": 5593.68,
+      },
+      updatedAt: 6595.81,
       digest: "<value>",
     };
 ```

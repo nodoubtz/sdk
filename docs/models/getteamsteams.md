@@ -16,6 +16,9 @@ const value: { [k: string]: any } = {
 ```typescript
 const value: models.TeamLimited = {
   limited: false,
+  limitedBy: [
+    "scope",
+  ],
   saml: {
     connection: {
       type: "OktaSAML",
@@ -38,10 +41,10 @@ const value: models.TeamLimited = {
   avatar: "6eb07268bcfadd309905ffb1579354084c24655c",
   membership: {
     confirmed: false,
-    confirmedAt: 9416.84,
-    role: "MEMBER",
-    createdAt: 963.01,
-    created: 6266.14,
+    confirmedAt: 2822.91,
+    role: "DEVELOPER",
+    createdAt: 4110.54,
+    created: 7470.91,
   },
   created: "<value>",
   createdAt: 1630748523395,

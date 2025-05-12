@@ -6,6 +6,7 @@ sources:
             - location: https://openapi.vercel.sh/
         overlays:
             - location: overlay.yaml
+            - location: sdk-only-errors.yaml
             - location: mintlify-overlay.yaml
             - location: tests-overlay.yaml
         output: vercel-spec.json
@@ -23,3 +24,5 @@ targets:
             registry:
                 location: registry.speakeasyapi.dev/vercel/vercel-docs/vercel-oas-typescript-code-samples
             blocking: false
+        testing:
+            enabled: true

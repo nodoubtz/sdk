@@ -1,6 +1,6 @@
 # User
 
-Metadata for the User who generated the event.
+Metadata for {@link userId}.
 
 ## Example Usage
 
@@ -8,10 +8,10 @@ Metadata for the User who generated the event.
 import { User } from "@vercel/sdk/models/userevent.js";
 
 let value: User = {
-  avatar: "https://picsum.photos/seed/XH6yIN1I/1017/2664",
-  email: "Ned70@hotmail.com",
+  avatar: "https://loremflickr.com/2014/619?lock=4777752609260298",
+  email: "Robyn.Stracke76@hotmail.com",
+  username: "Hannah.Grant",
   uid: "<id>",
-  username: "Lexus.Prohaska50",
 };
 ```
 
@@ -21,6 +21,6 @@ let value: User = {
 | ------------------ | ------------------ | ------------------ | ------------------ |
 | `avatar`           | *string*           | :heavy_check_mark: | N/A                |
 | `email`            | *string*           | :heavy_check_mark: | N/A                |
+| `username`         | *string*           | :heavy_check_mark: | N/A                |
 | `slug`             | *string*           | :heavy_minus_sign: | N/A                |
 | `uid`              | *string*           | :heavy_check_mark: | N/A                |
-| `username`         | *string*           | :heavy_check_mark: | N/A                |

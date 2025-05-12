@@ -21,11 +21,13 @@ let value: ListUserEventsResponseBody = {
       ],
       createdAt: 1632859321020,
       userId: "zTuNVUXEAvvnNN3IaqinkyMw",
+      principalId: "<id>",
       payload: {
-        project: {
-          name: "<value>",
+        projectName: "<value>",
+        passwordProtection: "all",
+        oldPasswordProtection: {
+          deploymentType: "all",
         },
-        projectMembership: {},
       },
     },
   ],

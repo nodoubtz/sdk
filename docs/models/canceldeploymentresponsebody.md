@@ -16,39 +16,41 @@ let value: CancelDeploymentResponseBody = {
   env: [
     "<value>",
   ],
-  inspectorUrl: "https://content-corporation.info",
+  inspectorUrl: "https://tough-schnitzel.info/",
   isInConcurrentBuildsQueue: false,
   isInSystemBuildsQueue: false,
   projectSettings: {},
   aliasAssigned: false,
-  bootedAt: 2982.46,
-  buildingAt: 8625.6,
+  bootedAt: 7652.95,
+  buildingAt: 7318.56,
   buildSkipped: false,
   creator: {
     uid: "<id>",
   },
   public: false,
-  status: "QUEUED",
+  status: "CANCELED",
   id: "<id>",
-  createdAt: 3486.65,
+  createdAt: 779.91,
   name: "<value>",
   meta: {
     "key": "<value>",
   },
-  readyState: "CANCELED",
+  readyState: "ERROR",
   regions: [
     "<value>",
   ],
   type: "LAMBDAS",
-  url: "https://zealous-stay.info",
-  version: 1274.99,
+  url: "https://majestic-step.net/",
+  version: 6840.28,
   createdIn: "<value>",
   ownerId: "<id>",
-  plan: "hobby",
+  plan: "pro",
   projectId: "<id>",
   routes: [
     {
       src: "<value>",
+      continue: false,
+      middleware: 3006.32,
     },
   ],
 };
@@ -75,6 +77,7 @@ let value: CancelDeploymentResponseBody = {
 | `aliasAssigned`                                                                                                                                                                                                                                                                                                | *boolean*                                                                                                                                                                                                                                                                                                      | :heavy_check_mark:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |
 | `bootedAt`                                                                                                                                                                                                                                                                                                     | *number*                                                                                                                                                                                                                                                                                                       | :heavy_check_mark:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |
 | `buildingAt`                                                                                                                                                                                                                                                                                                   | *number*                                                                                                                                                                                                                                                                                                       | :heavy_check_mark:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |
+| `buildContainerFinishedAt`                                                                                                                                                                                                                                                                                     | *number*                                                                                                                                                                                                                                                                                                       | :heavy_minus_sign:                                                                                                                                                                                                                                                                                             | Since April 2025 it necessary for On-Demand Concurrency Minutes calculation                                                                                                                                                                                                                                    |
 | `buildSkipped`                                                                                                                                                                                                                                                                                                 | *boolean*                                                                                                                                                                                                                                                                                                      | :heavy_check_mark:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |
 | `creator`                                                                                                                                                                                                                                                                                                      | [models.CancelDeploymentCreator](../models/canceldeploymentcreator.md)                                                                                                                                                                                                                                         | :heavy_check_mark:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |
 | `initReadyAt`                                                                                                                                                                                                                                                                                                  | *number*                                                                                                                                                                                                                                                                                                       | :heavy_minus_sign:                                                                                                                                                                                                                                                                                             | N/A                                                                                                                                                                                                                                                                                                            |

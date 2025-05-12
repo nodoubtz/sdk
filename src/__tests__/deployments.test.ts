@@ -15,7 +15,7 @@ test("Deployments Get Deployment Events", async () => {
     bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
   });
 
-  await vercel.deployments.getDeploymentEvents({
+  const result = await vercel.deployments.getDeploymentEvents({
     idOrUrl: "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
     follow: 1,
     limit: 100,
@@ -27,6 +27,26 @@ test("Deployments Get Deployment Events", async () => {
     builds: 1,
     teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
     slug: "my-team-url-slug",
+  });
+  expect(result).toBeDefined();
+});
+
+test("Deployments Update Integration Deployment Action", async () => {
+  const testHttpClient = createTestHTTPClient(
+    "update-integration-deployment-action",
+  );
+
+  const vercel = new Vercel({
+    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
+    httpClient: testHttpClient,
+    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
+  });
+
+  await vercel.deployments.updateIntegrationDeploymentAction({
+    deploymentId: "<id>",
+    integrationConfigurationId: "<id>",
+    resourceId: "<id>",
+    action: "<value>",
   });
 });
 
@@ -84,6 +104,7 @@ test("Deployments Create Deployment", async () => {
     teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
     slug: "my-team-url-slug",
     requestBody: {
+      deploymentId: "dpl_2qn7PZrx89yxY34vEZPD31Y9XVj6",
       files: [
         {
           file: "folder/file.js",
@@ -101,55 +122,68 @@ test("Deployments Create Deployment", async () => {
         commitSha: "dc36199b2234c6586ebe05ec94078a895c707e29",
         dirty: true,
       },
+      gitSource: {
+        ref: "main",
+        repoId: 123456789,
+        sha: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+        type: "github",
+      },
       meta: {
         "foo": "bar",
       },
       name: "my-instant-deployment",
       project: "my-deployment-project",
+      projectSettings: {
+        buildCommand: "next build",
+        installCommand: "pnpm install",
+      },
+      target: "production",
     },
   });
   expect(result).toBeDefined();
   expect(result).toEqual({
     build: {
-      env: [],
+      env: [
+        "<value>",
+        "<value>",
+        "<value>",
+      ],
     },
     env: [
       "<value>",
       "<value>",
-      "<value>",
     ],
-    inspectorUrl: "https://grave-dredger.com",
+    inspectorUrl: "https://firm-casket.name/",
     isInConcurrentBuildsQueue: false,
     isInSystemBuildsQueue: false,
     projectSettings: {},
-    aliasAssigned: false,
-    bootedAt: 4336.60,
-    buildingAt: 7030.55,
-    buildSkipped: true,
+    aliasAssigned: true,
+    bootedAt: 7030.55,
+    buildingAt: 2916.6,
+    buildSkipped: false,
     creator: {
       uid: "<id>",
     },
-    public: false,
-    status: "QUEUED",
+    public: true,
+    status: "BUILDING",
     type: "LAMBDAS",
     name: "<value>",
-    createdAt: 5133.44,
+    createdAt: 1218,
     id: "<id>",
-    version: 1218.01,
+    version: 5856.16,
     meta: {
       "key": "<value>",
       "key1": "<value>",
     },
-    readyState: "INITIALIZING",
-    regions: [],
-    url: "https://apprehensive-perp.info/",
+    readyState: "CANCELED",
+    regions: [
+      "<value>",
+    ],
+    url: "https://quiet-formation.name/",
     plan: "pro",
     projectId: "<id>",
     ownerId: "<id>",
     routes: [
-      {
-        src: "<value>",
-      },
       {
         src: "<value>",
       },
@@ -191,7 +225,7 @@ test("Deployments Cancel Deployment", async () => {
     projectSettings: {},
     aliasAssigned: false,
     bootedAt: 8528.74,
-    buildingAt: 7590.78,
+    buildingAt: 7590.79,
     buildSkipped: false,
     creator: {
       uid: "<id>",
@@ -223,8 +257,8 @@ test("Deployments Cancel Deployment", async () => {
       },
       {
         src: "<value>",
-        continue: false,
-        middleware: 6618.12,
+        continue: true,
+        middleware: 4831.29,
       },
     ],
   });
@@ -262,7 +296,22 @@ test("Deployments List Deployment Files", async () => {
     slug: "my-team-url-slug",
   });
   expect(result).toBeDefined();
-  expect(result).toEqual([]);
+  expect(result).toEqual([
+    {
+      name: "my-file.json",
+      type: "file",
+      uid: "2d4aad419917f15b1146e9e03ddc9bb31747e4d0",
+      contentType: "application/json",
+      mode: 956.43,
+    },
+    {
+      name: "my-file.json",
+      type: "file",
+      uid: "2d4aad419917f15b1146e9e03ddc9bb31747e4d0",
+      contentType: "application/json",
+      mode: 1805.56,
+    },
+  ]);
 });
 
 test("Deployments Get Deployment File Contents", async () => {
@@ -274,12 +323,13 @@ test("Deployments Get Deployment File Contents", async () => {
     bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
   });
 
-  await vercel.deployments.getDeploymentFileContents({
+  const result = await vercel.deployments.getDeploymentFileContents({
     id: "<id>",
     fileId: "<id>",
     teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
     slug: "my-team-url-slug",
   });
+  expect(result).toBeDefined();
 });
 
 test("Deployments Get Deployments", async () => {
@@ -318,6 +368,7 @@ test("Deployments Get Deployments", async () => {
         name: "docs",
         url: "docs-9jaeg38me.vercel.app",
         created: 1609492210000,
+        defaultRoute: "/docs",
         deleted: 1609492210000,
         undeleted: 1609492210000,
         softDeletedByRetention: true,
@@ -344,6 +395,7 @@ test("Deployments Get Deployments", async () => {
         name: "docs",
         url: "docs-9jaeg38me.vercel.app",
         created: 1609492210000,
+        defaultRoute: "/docs",
         deleted: 1609492210000,
         undeleted: 1609492210000,
         softDeletedByRetention: true,
@@ -388,24 +440,5 @@ test("Deployments Delete Deployment", async () => {
   expect(result).toEqual({
     uid: "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
     state: "DELETED",
-  });
-});
-
-test("Deployments Update Integration Deployment Action", async () => {
-  const testHttpClient = createTestHTTPClient(
-    "update-integration-deployment-action",
-  );
-
-  const vercel = new Vercel({
-    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
-    httpClient: testHttpClient,
-    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
-  });
-
-  await vercel.deployments.updateIntegrationDeploymentAction({
-    deploymentId: "<id>",
-    integrationConfigurationId: "<id>",
-    resourceId: "<id>",
-    action: "<value>",
   });
 });

@@ -15,9 +15,12 @@ import { projectsGetProjectDomains } from "../funcs/projectsGetProjectDomains.js
 import { projectsGetProjectEnv } from "../funcs/projectsGetProjectEnv.js";
 import { projectsGetProjects } from "../funcs/projectsGetProjects.js";
 import { projectsListPromoteAliases } from "../funcs/projectsListPromoteAliases.js";
+import { projectsMoveProjectDomain } from "../funcs/projectsMoveProjectDomain.js";
+import { projectsPauseProject } from "../funcs/projectsPauseProject.js";
 import { projectsRemoveProjectDomain } from "../funcs/projectsRemoveProjectDomain.js";
 import { projectsRemoveProjectEnv } from "../funcs/projectsRemoveProjectEnv.js";
 import { projectsRequestPromote } from "../funcs/projectsRequestPromote.js";
+import { projectsUnpauseProject } from "../funcs/projectsUnpauseProject.js";
 import { projectsUpdateProject } from "../funcs/projectsUpdateProject.js";
 import { projectsUpdateProjectDataCache } from "../funcs/projectsUpdateProjectDataCache.js";
 import { projectsUpdateProjectDomain } from "../funcs/projectsUpdateProjectDomain.js";
@@ -74,6 +77,11 @@ import {
   ListPromoteAliasesResponseBody,
 } from "../models/listpromotealiasesop.js";
 import {
+  MoveProjectDomainRequest,
+  MoveProjectDomainResponseBody,
+} from "../models/moveprojectdomainop.js";
+import { PauseProjectRequest } from "../models/pauseprojectop.js";
+import {
   RemoveProjectDomainRequest,
   RemoveProjectDomainResponseBody,
 } from "../models/removeprojectdomainop.js";
@@ -82,6 +90,7 @@ import {
   RemoveProjectEnvResponseBody,
 } from "../models/removeprojectenvop.js";
 import { RequestPromoteRequest } from "../models/requestpromoteop.js";
+import { UnpauseProjectRequest } from "../models/unpauseprojectop.js";
 import {
   UpdateProjectDataCacheRequest,
   UpdateProjectDataCacheResponseBody,
@@ -276,6 +285,23 @@ export class Projects extends ClientSDK {
   }
 
   /**
+   * Move a project domain
+   *
+   * @remarks
+   * Move one project's domain to another project. Also allows the move of all redirects pointed to that domain in the same project.
+   */
+  async moveProjectDomain(
+    request: MoveProjectDomainRequest,
+    options?: RequestOptions,
+  ): Promise<MoveProjectDomainResponseBody> {
+    return unwrapAsync(projectsMoveProjectDomain(
+      this,
+      request,
+      options,
+    ));
+  }
+
+  /**
    * Verify project domain
    *
    * @remarks
@@ -456,6 +482,40 @@ export class Projects extends ClientSDK {
     options?: RequestOptions,
   ): Promise<ListPromoteAliasesResponseBody> {
     return unwrapAsync(projectsListPromoteAliases(
+      this,
+      request,
+      options,
+    ));
+  }
+
+  /**
+   * Pause a project
+   *
+   * @remarks
+   * Pause a project by passing its project `id` in the URL. If the project does not exist given the id then the request will fail with 400 status code. If the project disables auto assigning custom production domains and blocks the active Production Deployment then the request will return with 200 status code.
+   */
+  async pauseProject(
+    request: PauseProjectRequest,
+    options?: RequestOptions,
+  ): Promise<void> {
+    return unwrapAsync(projectsPauseProject(
+      this,
+      request,
+      options,
+    ));
+  }
+
+  /**
+   * Unpause a project
+   *
+   * @remarks
+   * Unpause a project by passing its project `id` in the URL. If the project does not exist given the id then the request will fail with 400 status code. If the project enables auto assigning custom production domains and unblocks the active Production Deployment then the request will return with 200 status code.
+   */
+  async unpauseProject(
+    request: UnpauseProjectRequest,
+    options?: RequestOptions,
+  ): Promise<void> {
+    return unwrapAsync(projectsUnpauseProject(
       this,
       request,
       options,

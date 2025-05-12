@@ -3,9 +3,9 @@
 ## Example Usage
 
 ```typescript
-import { Sources } from "@vercel/sdk/models/createconfigurablelogdrainop.js";
+import { Sources } from "@vercel/sdk/models/createlogdrainop.js";
 
-let value: Sources = "static";
+let value: Sources = "edge";
 ```
 
 ## Values

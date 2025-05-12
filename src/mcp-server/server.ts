@@ -11,7 +11,7 @@ import {
   createRegisterResource,
   createRegisterResourceTemplate,
 } from "./resources.js";
-import { MCPScope, mcpScopes } from "./scopes.js";
+import { MCPScope } from "./scopes.js";
 import { createRegisterTool } from "./tools.js";
 import { tool$accessGroupsCreateAccessGroup } from "./tools/accessGroupsCreateAccessGroup.js";
 import { tool$accessGroupsCreateAccessGroupProject } from "./tools/accessGroupsCreateAccessGroupProject.js";
@@ -29,6 +29,7 @@ import { tool$aliasesDeleteAlias } from "./tools/aliasesDeleteAlias.js";
 import { tool$aliasesGetAlias } from "./tools/aliasesGetAlias.js";
 import { tool$aliasesListAliases } from "./tools/aliasesListAliases.js";
 import { tool$aliasesListDeploymentAliases } from "./tools/aliasesListDeploymentAliases.js";
+import { tool$aliasesPatchUrlProtectionBypass } from "./tools/aliasesPatchUrlProtectionBypass.js";
 import { tool$artifactsArtifactExists } from "./tools/artifactsArtifactExists.js";
 import { tool$artifactsArtifactQuery } from "./tools/artifactsArtifactQuery.js";
 import { tool$artifactsDownloadArtifact } from "./tools/artifactsDownloadArtifact.js";
@@ -97,15 +98,10 @@ import { tool$environmentUpdateCustomEnvironment } from "./tools/environmentUpda
 import { tool$integrationsDeleteConfiguration } from "./tools/integrationsDeleteConfiguration.js";
 import { tool$integrationsGetConfiguration } from "./tools/integrationsGetConfiguration.js";
 import { tool$integrationsGetConfigurations } from "./tools/integrationsGetConfigurations.js";
-import { tool$integrationsGitNamespaces } from "./tools/integrationsGitNamespaces.js";
-import { tool$integrationsSearchRepo } from "./tools/integrationsSearchRepo.js";
 import { tool$integrationsUpdateIntegrationDeploymentAction } from "./tools/integrationsUpdateIntegrationDeploymentAction.js";
-import { tool$logDrainsCreateConfigurableLogDrain } from "./tools/logDrainsCreateConfigurableLogDrain.js";
 import { tool$logDrainsCreateLogDrain } from "./tools/logDrainsCreateLogDrain.js";
 import { tool$logDrainsDeleteConfigurableLogDrain } from "./tools/logDrainsDeleteConfigurableLogDrain.js";
 import { tool$logDrainsDeleteIntegrationLogDrain } from "./tools/logDrainsDeleteIntegrationLogDrain.js";
-import { tool$logDrainsGetAllLogDrains } from "./tools/logDrainsGetAllLogDrains.js";
-import { tool$logDrainsGetConfigurableLogDrain } from "./tools/logDrainsGetConfigurableLogDrain.js";
 import { tool$logDrainsGetIntegrationLogDrains } from "./tools/logDrainsGetIntegrationLogDrains.js";
 import { tool$marketplaceCreateEvent } from "./tools/marketplaceCreateEvent.js";
 import { tool$marketplaceCreateInstallationIntegrationConfiguration } from "./tools/marketplaceCreateInstallationIntegrationConfiguration.js";
@@ -116,7 +112,6 @@ import { tool$marketplaceGetAccountInfo } from "./tools/marketplaceGetAccountInf
 import { tool$marketplaceGetInvoice } from "./tools/marketplaceGetInvoice.js";
 import { tool$marketplaceGetMember } from "./tools/marketplaceGetMember.js";
 import { tool$marketplaceImportResource } from "./tools/marketplaceImportResource.js";
-import { tool$marketplaceQueryExperimentationItems } from "./tools/marketplaceQueryExperimentationItems.js";
 import { tool$marketplaceSubmitBillingData } from "./tools/marketplaceSubmitBillingData.js";
 import { tool$marketplaceSubmitInvoice } from "./tools/marketplaceSubmitInvoice.js";
 import { tool$marketplaceSubmitPrepaymentBalances } from "./tools/marketplaceSubmitPrepaymentBalances.js";
@@ -141,9 +136,12 @@ import { tool$projectsGetProjectDomains } from "./tools/projectsGetProjectDomain
 import { tool$projectsGetProjectEnv } from "./tools/projectsGetProjectEnv.js";
 import { tool$projectsGetProjects } from "./tools/projectsGetProjects.js";
 import { tool$projectsListPromoteAliases } from "./tools/projectsListPromoteAliases.js";
+import { tool$projectsMoveProjectDomain } from "./tools/projectsMoveProjectDomain.js";
+import { tool$projectsPauseProject } from "./tools/projectsPauseProject.js";
 import { tool$projectsRemoveProjectDomain } from "./tools/projectsRemoveProjectDomain.js";
 import { tool$projectsRemoveProjectEnv } from "./tools/projectsRemoveProjectEnv.js";
 import { tool$projectsRequestPromote } from "./tools/projectsRequestPromote.js";
+import { tool$projectsUnpauseProject } from "./tools/projectsUnpauseProject.js";
 import { tool$projectsUpdateProject } from "./tools/projectsUpdateProject.js";
 import { tool$projectsUpdateProjectDataCache } from "./tools/projectsUpdateProjectDataCache.js";
 import { tool$projectsUpdateProjectDomain } from "./tools/projectsUpdateProjectDomain.js";
@@ -153,6 +151,7 @@ import { tool$securityAddBypassIp } from "./tools/securityAddBypassIp.js";
 import { tool$securityGetActiveAttackStatus } from "./tools/securityGetActiveAttackStatus.js";
 import { tool$securityGetBypassIp } from "./tools/securityGetBypassIp.js";
 import { tool$securityGetFirewallConfig } from "./tools/securityGetFirewallConfig.js";
+import { tool$securityPutFirewallConfig } from "./tools/securityPutFirewallConfig.js";
 import { tool$securityRemoveBypassIp } from "./tools/securityRemoveBypassIp.js";
 import { tool$securityUpdateAttackChallengeMode } from "./tools/securityUpdateAttackChallengeMode.js";
 import { tool$securityUpdateFirewallConfig } from "./tools/securityUpdateFirewallConfig.js";
@@ -187,7 +186,7 @@ export function createMCPServer(deps: {
 }) {
   const server = new McpServer({
     name: "Vercel",
-    version: "1.6.0",
+    version: "1.7.1",
   });
 
   const client = new VercelCore({
@@ -196,7 +195,7 @@ export function createMCPServer(deps: {
     serverIdx: deps.serverIdx,
   });
 
-  const scopes = new Set(deps.scopes ?? mcpScopes);
+  const scopes = new Set(deps.scopes);
 
   const allowedTools = deps.allowedTools && new Set(deps.allowedTools);
   const tool = createRegisterTool(
@@ -249,6 +248,7 @@ export function createMCPServer(deps: {
   tool(tool$projectsUpdateProjectDomain);
   tool(tool$projectsRemoveProjectDomain);
   tool(tool$projectsAddProjectDomain);
+  tool(tool$projectsMoveProjectDomain);
   tool(tool$projectsVerifyProjectDomain);
   tool(tool$projectsFilterProjectEnvs);
   tool(tool$projectsCreateProjectEnv);
@@ -260,6 +260,8 @@ export function createMCPServer(deps: {
   tool(tool$projectsUpdateProjectProtectionBypass);
   tool(tool$projectsRequestPromote);
   tool(tool$projectsListPromoteAliases);
+  tool(tool$projectsPauseProject);
+  tool(tool$projectsUnpauseProject);
   tool(tool$deploymentsGetDeploymentEvents);
   tool(tool$deploymentsUpdateIntegrationDeploymentAction);
   tool(tool$deploymentsGetDeployment);
@@ -274,8 +276,6 @@ export function createMCPServer(deps: {
   tool(tool$integrationsGetConfigurations);
   tool(tool$integrationsGetConfiguration);
   tool(tool$integrationsDeleteConfiguration);
-  tool(tool$integrationsGitNamespaces);
-  tool(tool$integrationsSearchRepo);
   tool(tool$domainsBuyDomain);
   tool(tool$domainsCheckDomainPrice);
   tool(tool$domainsCheckDomainStatus);
@@ -290,10 +290,7 @@ export function createMCPServer(deps: {
   tool(tool$dnsCreateRecord);
   tool(tool$dnsUpdateRecord);
   tool(tool$dnsRemoveRecord);
-  tool(tool$logDrainsGetConfigurableLogDrain);
   tool(tool$logDrainsDeleteConfigurableLogDrain);
-  tool(tool$logDrainsGetAllLogDrains);
-  tool(tool$logDrainsCreateConfigurableLogDrain);
   tool(tool$logDrainsGetIntegrationLogDrains);
   tool(tool$logDrainsCreateLogDrain);
   tool(tool$logDrainsDeleteIntegrationLogDrain);
@@ -328,7 +325,6 @@ export function createMCPServer(deps: {
   tool(tool$marketplaceUpdateResourceSecretsById);
   tool(tool$marketplaceImportResource);
   tool(tool$marketplaceExchangeSsoToken);
-  tool(tool$marketplaceQueryExperimentationItems);
   tool(tool$marketplaceCreateInstallationIntegrationConfiguration);
   tool(tool$marketplaceUpdateInstallationIntegrationConfiguration);
   tool(tool$marketplaceDeleteInstallationIntegrationConfiguration);
@@ -348,6 +344,7 @@ export function createMCPServer(deps: {
   tool(tool$environmentUpdateCustomEnvironment);
   tool(tool$environmentRemoveCustomEnvironment);
   tool(tool$securityUpdateAttackChallengeMode);
+  tool(tool$securityPutFirewallConfig);
   tool(tool$securityUpdateFirewallConfig);
   tool(tool$securityGetFirewallConfig);
   tool(tool$securityGetActiveAttackStatus);
@@ -376,6 +373,7 @@ export function createMCPServer(deps: {
   tool(tool$aliasesListAliases);
   tool(tool$aliasesGetAlias);
   tool(tool$aliasesDeleteAlias);
+  tool(tool$aliasesPatchUrlProtectionBypass);
   tool(tool$certsGetCertById);
   tool(tool$certsRemoveCert);
   tool(tool$certsIssueCert);

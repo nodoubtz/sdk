@@ -3,13 +3,13 @@
 ## Example Usage
 
 ```typescript
-import { ConditionGroup } from "@vercel/sdk/models/updatefirewallconfigop.js";
+import { ConditionGroup } from "@vercel/sdk/models/putfirewallconfigop.js";
 
 let value: ConditionGroup = {
   conditions: [
     {
-      type: "method",
-      op: "re",
+      type: "rate_limit_api_id",
+      op: "eq",
     },
   ],
 };

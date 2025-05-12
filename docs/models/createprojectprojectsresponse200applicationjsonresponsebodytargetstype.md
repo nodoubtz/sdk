@@ -1,5 +1,7 @@
 # CreateProjectProjectsResponse200ApplicationJSONResponseBodyTargetsType
 
+The type of matching to perform
+
 ## Example Usage
 
 ```typescript
@@ -7,7 +9,7 @@ import { CreateProjectProjectsResponse200ApplicationJSONResponseBodyTargetsType 
 
 let value:
   CreateProjectProjectsResponse200ApplicationJSONResponseBodyTargetsType =
-    "startsWith";
+    "equals";
 ```
 
 ## Values

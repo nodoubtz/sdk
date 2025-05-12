@@ -5,11 +5,11 @@
 ```typescript
 import { ScopesOrigin } from "@vercel/sdk/models/authtoken.js";
 
-let value: ScopesOrigin = "passkey";
+let value: ScopesOrigin = "gitlab";
 ```
 
 ## Values
 
 ```typescript
-"saml" | "github" | "gitlab" | "bitbucket" | "email" | "manual" | "passkey" | "otp" | "sms" | "invite"
+"saml" | "github" | "gitlab" | "bitbucket" | "email" | "manual" | "passkey" | "otp" | "sms" | "invite" | "google"
 ```

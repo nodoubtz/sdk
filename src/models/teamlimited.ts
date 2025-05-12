@@ -8,6 +8,12 @@ import { ClosedEnum } from "../types/enums.js";
 import { Result as SafeParseResult } from "../types/fp.js";
 import { SDKValidationError } from "./sdkvalidationerror.js";
 
+export const LimitedBy = {
+  Scope: "scope",
+  Mfa: "mfa",
+} as const;
+export type LimitedBy = ClosedEnum<typeof LimitedBy>;
+
 /**
  * Information for the SAML Single Sign-On configuration.
  */
@@ -110,14 +116,14 @@ export const TeamPermissions = {
 export type TeamPermissions = ClosedEnum<typeof TeamPermissions>;
 
 export const Origin = {
+  Mail: "mail",
   Link: "link",
-  Saml: "saml",
+  Import: "import",
+  Teams: "teams",
   Github: "github",
   Gitlab: "gitlab",
   Bitbucket: "bitbucket",
-  Mail: "mail",
-  Import: "import",
-  Teams: "teams",
+  Saml: "saml",
   Dsync: "dsync",
   Feedback: "feedback",
   OrganizationTeams: "organization-teams",
@@ -146,13 +152,13 @@ export type JoinedFrom = {
 export type Membership = {
   uid?: string | undefined;
   entitlements?: Array<Entitlements> | undefined;
+  teamId?: string | undefined;
   confirmed: boolean;
   confirmedAt: number;
   accessRequestedAt?: number | undefined;
   role: Role;
   teamRoles?: Array<TeamRoles> | undefined;
   teamPermissions?: Array<TeamPermissions> | undefined;
-  teamId?: string | undefined;
   createdAt: number;
   created: number;
   joinedFrom?: JoinedFrom | undefined;
@@ -163,13 +169,15 @@ export type Membership = {
  */
 export type TeamLimited = {
   /**
-   * Property indicating that this Team data contains only limited information, due to the authentication token missing privileges to read the full Team data. Re-login with the Team's configured SAML Single Sign-On provider in order to upgrade the authentication token with the necessary privileges.
+   * Property indicating that this Team data contains only limited information, due to the authentication token missing privileges to read the full Team data or due to team having MFA enforced and the user not having MFA enabled. Re-login with the Team's configured SAML Single Sign-On provider in order to upgrade the authentication token with the necessary privileges.
    */
   limited: boolean;
+  limitedBy: Array<LimitedBy>;
   /**
    * When "Single Sign-On (SAML)" is configured, this object contains information that allows the client-side to identify whether or not this Team has SAML enforced.
    */
   saml?: Saml | undefined;
+  mfaEnforced?: boolean | undefined;
   /**
    * The Team's unique identifier.
    */
@@ -199,6 +207,25 @@ export type TeamLimited = {
    */
   createdAt: number;
 };
+
+/** @internal */
+export const LimitedBy$inboundSchema: z.ZodNativeEnum<typeof LimitedBy> = z
+  .nativeEnum(LimitedBy);
+
+/** @internal */
+export const LimitedBy$outboundSchema: z.ZodNativeEnum<typeof LimitedBy> =
+  LimitedBy$inboundSchema;
+
+/**
+ * @internal
+ * @deprecated This namespace will be removed in future versions. Use schemas and types that are exported directly from this module.
+ */
+export namespace LimitedBy$ {
+  /** @deprecated use `LimitedBy$inboundSchema` instead. */
+  export const inboundSchema = LimitedBy$inboundSchema;
+  /** @deprecated use `LimitedBy$outboundSchema` instead. */
+  export const outboundSchema = LimitedBy$outboundSchema;
+}
 
 /** @internal */
 export const Connection$inboundSchema: z.ZodType<
@@ -632,13 +659,13 @@ export const Membership$inboundSchema: z.ZodType<
 > = z.object({
   uid: z.string().optional(),
   entitlements: z.array(z.lazy(() => Entitlements$inboundSchema)).optional(),
+  teamId: z.string().optional(),
   confirmed: z.boolean(),
   confirmedAt: z.number(),
   accessRequestedAt: z.number().optional(),
   role: Role$inboundSchema,
   teamRoles: z.array(TeamRoles$inboundSchema).optional(),
   teamPermissions: z.array(TeamPermissions$inboundSchema).optional(),
-  teamId: z.string().optional(),
   createdAt: z.number(),
   created: z.number(),
   joinedFrom: z.lazy(() => JoinedFrom$inboundSchema).optional(),
@@ -648,13 +675,13 @@ export const Membership$inboundSchema: z.ZodType<
 export type Membership$Outbound = {
   uid?: string | undefined;
   entitlements?: Array<Entitlements$Outbound> | undefined;
+  teamId?: string | undefined;
   confirmed: boolean;
   confirmedAt: number;
   accessRequestedAt?: number | undefined;
   role: string;
   teamRoles?: Array<string> | undefined;
   teamPermissions?: Array<string> | undefined;
-  teamId?: string | undefined;
   createdAt: number;
   created: number;
   joinedFrom?: JoinedFrom$Outbound | undefined;
@@ -668,13 +695,13 @@ export const Membership$outboundSchema: z.ZodType<
 > = z.object({
   uid: z.string().optional(),
   entitlements: z.array(z.lazy(() => Entitlements$outboundSchema)).optional(),
+  teamId: z.string().optional(),
   confirmed: z.boolean(),
   confirmedAt: z.number(),
   accessRequestedAt: z.number().optional(),
   role: Role$outboundSchema,
   teamRoles: z.array(TeamRoles$outboundSchema).optional(),
   teamPermissions: z.array(TeamPermissions$outboundSchema).optional(),
-  teamId: z.string().optional(),
   createdAt: z.number(),
   created: z.number(),
   joinedFrom: z.lazy(() => JoinedFrom$outboundSchema).optional(),
@@ -714,7 +741,9 @@ export const TeamLimited$inboundSchema: z.ZodType<
   unknown
 > = z.object({
   limited: z.boolean(),
+  limitedBy: z.array(LimitedBy$inboundSchema),
   saml: z.lazy(() => Saml$inboundSchema).optional(),
+  mfaEnforced: z.boolean().optional(),
   id: z.string(),
   slug: z.string(),
   name: z.nullable(z.string()),
@@ -727,7 +756,9 @@ export const TeamLimited$inboundSchema: z.ZodType<
 /** @internal */
 export type TeamLimited$Outbound = {
   limited: boolean;
+  limitedBy: Array<string>;
   saml?: Saml$Outbound | undefined;
+  mfaEnforced?: boolean | undefined;
   id: string;
   slug: string;
   name: string | null;
@@ -744,7 +775,9 @@ export const TeamLimited$outboundSchema: z.ZodType<
   TeamLimited
 > = z.object({
   limited: z.boolean(),
+  limitedBy: z.array(LimitedBy$outboundSchema),
   saml: z.lazy(() => Saml$outboundSchema).optional(),
+  mfaEnforced: z.boolean().optional(),
   id: z.string(),
   slug: z.string(),
   name: z.nullable(z.string()),

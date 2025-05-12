@@ -6,7 +6,10 @@ import { deploymentsCancelDeployment } from "../funcs/deploymentsCancelDeploymen
 import { deploymentsCreateDeployment } from "../funcs/deploymentsCreateDeployment.js";
 import { deploymentsDeleteDeployment } from "../funcs/deploymentsDeleteDeployment.js";
 import { deploymentsGetDeployment } from "../funcs/deploymentsGetDeployment.js";
-import { deploymentsGetDeploymentEvents } from "../funcs/deploymentsGetDeploymentEvents.js";
+import {
+  deploymentsGetDeploymentEvents,
+  GetDeploymentEventsAcceptEnum,
+} from "../funcs/deploymentsGetDeploymentEvents.js";
 import { deploymentsGetDeploymentFileContents } from "../funcs/deploymentsGetDeploymentFileContents.js";
 import { deploymentsGetDeployments } from "../funcs/deploymentsGetDeployments.js";
 import { deploymentsListDeploymentFiles } from "../funcs/deploymentsListDeploymentFiles.js";
@@ -26,8 +29,14 @@ import {
   DeleteDeploymentResponseBody,
 } from "../models/deletedeploymentop.js";
 import { FileTree } from "../models/filetree.js";
-import { GetDeploymentEventsRequest } from "../models/getdeploymenteventsop.js";
-import { GetDeploymentFileContentsRequest } from "../models/getdeploymentfilecontentsop.js";
+import {
+  GetDeploymentEventsRequest,
+  GetDeploymentEventsResponse,
+} from "../models/getdeploymenteventsop.js";
+import {
+  GetDeploymentFileContentsRequest,
+  GetDeploymentFileContentsResponseBody,
+} from "../models/getdeploymentfilecontentsop.js";
 import {
   GetDeploymentRequest,
   GetDeploymentResponseBody,
@@ -44,6 +53,8 @@ import {
 } from "../models/uploadfileop.js";
 import { unwrapAsync } from "../types/fp.js";
 
+export { GetDeploymentEventsAcceptEnum } from "../funcs/deploymentsGetDeploymentEvents.js";
+
 export class Deployments extends ClientSDK {
   /**
    * Get deployment events
@@ -53,8 +64,10 @@ export class Deployments extends ClientSDK {
    */
   async getDeploymentEvents(
     request: GetDeploymentEventsRequest,
-    options?: RequestOptions,
-  ): Promise<void> {
+    options?: RequestOptions & {
+      acceptHeaderOverride?: GetDeploymentEventsAcceptEnum;
+    },
+  ): Promise<GetDeploymentEventsResponse> {
     return unwrapAsync(deploymentsGetDeploymentEvents(
       this,
       request,
@@ -173,7 +186,7 @@ export class Deployments extends ClientSDK {
   async getDeploymentFileContents(
     request: GetDeploymentFileContentsRequest,
     options?: RequestOptions,
-  ): Promise<void> {
+  ): Promise<GetDeploymentFileContentsResponseBody> {
     return unwrapAsync(deploymentsGetDeploymentFileContents(
       this,
       request,

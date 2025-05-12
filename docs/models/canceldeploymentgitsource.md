@@ -8,7 +8,7 @@
 ```typescript
 const value: models.CancelDeploymentGitSource1 = {
   type: "github",
-  repoId: "<id>",
+  repoId: 7595.93,
 };
 ```
 
@@ -26,8 +26,9 @@ const value: models.CancelDeploymentGitSource2 = {
 
 ```typescript
 const value: models.CancelDeploymentGitSource3 = {
-  type: "gitlab",
-  projectId: "<id>",
+  type: "github-custom-host",
+  host: "trained-window.name",
+  repoId: 5987.63,
 };
 ```
 
@@ -35,8 +36,10 @@ const value: models.CancelDeploymentGitSource3 = {
 
 ```typescript
 const value: models.CancelDeploymentGitSource4 = {
-  type: "bitbucket",
-  repoUuid: "<id>",
+  type: "github-custom-host",
+  host: "distorted-bend.biz",
+  org: "<value>",
+  repo: "<value>",
 };
 ```
 
@@ -44,20 +47,17 @@ const value: models.CancelDeploymentGitSource4 = {
 
 ```typescript
 const value: models.CancelDeploymentGitSource5 = {
-  type: "bitbucket",
-  owner: "<value>",
-  slug: "<value>",
+  type: "gitlab",
+  projectId: 808.68,
 };
 ```
 
-### `models.GitSource6`
+### `models.CancelDeploymentGitSource6`
 
 ```typescript
-const value: models.GitSource6 = {
-  type: "custom",
-  ref: "<value>",
-  sha: "<value>",
-  gitUrl: "https://raw-viability.name",
+const value: models.CancelDeploymentGitSource6 = {
+  type: "bitbucket",
+  repoUuid: "<id>",
 };
 ```
 
@@ -65,10 +65,9 @@ const value: models.GitSource6 = {
 
 ```typescript
 const value: models.GitSource7 = {
-  type: "github",
-  ref: "<value>",
-  sha: "<value>",
-  repoId: 8020.69,
+  type: "bitbucket",
+  owner: "<value>",
+  slug: "<value>",
 };
 ```
 
@@ -76,10 +75,10 @@ const value: models.GitSource7 = {
 
 ```typescript
 const value: models.GitSource8 = {
-  type: "gitlab",
+  type: "custom",
   ref: "<value>",
   sha: "<value>",
-  projectId: 3744.14,
+  gitUrl: "https://slow-middle.info/",
 };
 ```
 
@@ -87,6 +86,40 @@ const value: models.GitSource8 = {
 
 ```typescript
 const value: models.GitSource9 = {
+  type: "github",
+  ref: "<value>",
+  sha: "<value>",
+  repoId: 7358.23,
+};
+```
+
+### `models.GitSource10`
+
+```typescript
+const value: models.GitSource10 = {
+  type: "github-custom-host",
+  host: "triangular-farm.org",
+  ref: "<value>",
+  sha: "<value>",
+  repoId: 1505.66,
+};
+```
+
+### `models.GitSource11`
+
+```typescript
+const value: models.GitSource11 = {
+  type: "gitlab",
+  ref: "<value>",
+  sha: "<value>",
+  projectId: 9011.78,
+};
+```
+
+### `models.GitSource12`
+
+```typescript
+const value: models.GitSource12 = {
   type: "bitbucket",
   ref: "<value>",
   sha: "<value>",

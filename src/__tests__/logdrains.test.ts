@@ -6,6 +6,22 @@ import { expect, test } from "vitest";
 import { Vercel } from "../index.js";
 import { createTestHTTPClient } from "./testclient.js";
 
+test("Logdrains Delete Configurable Log Drain", async () => {
+  const testHttpClient = createTestHTTPClient("deleteConfigurableLogDrain");
+
+  const vercel = new Vercel({
+    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
+    httpClient: testHttpClient,
+    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
+  });
+
+  await vercel.logDrains.deleteConfigurableLogDrain({
+    id: "<id>",
+    teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
+    slug: "my-team-url-slug",
+  });
+});
+
 test("Logdrains Get Integration Log Drains", async () => {
   const testHttpClient = createTestHTTPClient("getIntegrationLogDrains");
 
@@ -20,7 +36,64 @@ test("Logdrains Get Integration Log Drains", async () => {
     slug: "my-team-url-slug",
   });
   expect(result).toBeDefined();
-  expect(result).toEqual([]);
+  expect(result).toEqual([
+    {
+      clientId: "oac_xRhY4LAB7yLhUADD69EvV7ct",
+      configurationId: "icfg_cuwj0AdCdH3BwWT4LPijCC7t",
+      createdAt: 1558531915505,
+      id: "ld_nBuA7zCID8g4QZ8g",
+      deliveryFormat: "json",
+      name: "My first log drain",
+      ownerId: "kr1PsOIzqEL5Xg6M4VZcZosf",
+      projectId: "AbCgVkqoxXeXCDWehVir51LHGrrcWL4mkYm14W6UBPWQeb",
+      projectIds: [
+        "AbCgVkqoxXeXCDWehVir51LHGrrcWL4mkYm14W6UBPWQeb",
+      ],
+      url: "https://example.com/log-drain",
+      sources: [
+        "build",
+      ],
+      createdFrom: "integration",
+      headers: {
+        "0": "{",
+        "1": "\"",
+        "2": "A",
+        "3": "u",
+        "4": "t",
+        "5": "h",
+        "6": "o",
+        "7": "r",
+        "8": "i",
+        "9": "z",
+        "10": "a",
+        "11": "t",
+        "12": "i",
+        "13": "o",
+        "14": "n",
+        "15": "\"",
+        "16": ":",
+        "17": " ",
+        "18": "\"",
+        "19": "B",
+        "20": "e",
+        "21": "a",
+        "22": "r",
+        "23": "e",
+        "24": "r",
+        "25": " ",
+        "26": "1",
+        "27": "2",
+        "28": "3",
+        "29": "\"",
+        "30": "}",
+      },
+      environments: [
+        "production",
+      ],
+      branch: "feature/*",
+      samplingRate: 0.5,
+    },
+  ]);
 });
 
 test("Logdrains Create Log Drain", async () => {
@@ -114,121 +187,5 @@ test("Logdrains Delete Integration Log Drain", async () => {
     id: "<id>",
     teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
     slug: "my-team-url-slug",
-  });
-});
-
-test("Logdrains Get Configurable Log Drain", async () => {
-  const testHttpClient = createTestHTTPClient("getConfigurableLogDrain");
-
-  const vercel = new Vercel({
-    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
-    httpClient: testHttpClient,
-    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
-  });
-
-  const result = await vercel.logDrains.getConfigurableLogDrain({
-    id: "<id>",
-    teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
-    slug: "my-team-url-slug",
-  });
-  expect(result).toBeDefined();
-  expect(result).toEqual({
-    environments: [
-      "production",
-      "production",
-    ],
-    id: "<id>",
-    createdAt: 9979.70,
-    deletedAt: 2589.89,
-    updatedAt: 1929.64,
-    url: "https://pleasant-beret.com/",
-    name: "<value>",
-    ownerId: "<id>",
-    deliveryFormat: "json",
-    secret: "<value>",
-  });
-});
-
-test("Logdrains Delete Configurable Log Drain", async () => {
-  const testHttpClient = createTestHTTPClient("deleteConfigurableLogDrain");
-
-  const vercel = new Vercel({
-    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
-    httpClient: testHttpClient,
-    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
-  });
-
-  await vercel.logDrains.deleteConfigurableLogDrain({
-    id: "<id>",
-    teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
-    slug: "my-team-url-slug",
-  });
-});
-
-test("Logdrains Get All Log Drains", async () => {
-  const testHttpClient = createTestHTTPClient("getAllLogDrains");
-
-  const vercel = new Vercel({
-    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
-    httpClient: testHttpClient,
-    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
-  });
-
-  const result = await vercel.logDrains.getAllLogDrains({
-    teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
-    slug: "my-team-url-slug",
-  });
-  expect(result).toBeDefined();
-  expect(result).toEqual([
-    {
-      environments: [
-        "production",
-      ],
-      id: "<id>",
-      createdAt: 5878.41,
-      deletedAt: 1366.34,
-      updatedAt: 8559.11,
-      url: "https://perfumed-director.net/",
-      name: "<value>",
-      ownerId: "<id>",
-      deliveryFormat: "json",
-    },
-  ]);
-});
-
-test("Logdrains Create Configurable Log Drain", async () => {
-  const testHttpClient = createTestHTTPClient("createConfigurableLogDrain");
-
-  const vercel = new Vercel({
-    serverURL: process.env["TEST_SERVER_URL"] ?? "http://localhost:18080",
-    httpClient: testHttpClient,
-    bearerToken: "<YOUR_BEARER_TOKEN_HERE>",
-  });
-
-  const result = await vercel.logDrains.createConfigurableLogDrain({
-    teamId: "team_1a2b3c4d5e6f7g8h9i0j1k2l",
-    slug: "my-team-url-slug",
-    requestBody: {
-      deliveryFormat: "json",
-      url: "https://sugary-technician.name",
-      sources: [
-        "external",
-      ],
-    },
-  });
-  expect(result).toBeDefined();
-  expect(result).toEqual({
-    environments: [
-      "preview",
-      "production",
-    ],
-    id: "<id>",
-    createdAt: 911.21,
-    deletedAt: 5254.68,
-    updatedAt: 3248.86,
-    url: "https://close-dividend.biz",
-    name: "<value>",
-    ownerId: "<id>",
-    deliveryFormat: "json",
   });
 });

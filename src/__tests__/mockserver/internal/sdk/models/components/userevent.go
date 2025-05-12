@@ -14,9 +14,6 @@ import (
 type UserEventType string
 
 const (
-	UserEventTypeFlag           UserEventType = "flag"
-	UserEventTypeFlagsSegment   UserEventType = "flags-segment"
-	UserEventTypeFlagsSettings  UserEventType = "flags-settings"
 	UserEventTypeAuthor         UserEventType = "author"
 	UserEventTypeBitbucketLogin UserEventType = "bitbucket_login"
 	UserEventTypeBold           UserEventType = "bold"
@@ -28,6 +25,9 @@ const (
 	UserEventTypeHookName       UserEventType = "hook_name"
 	UserEventTypeIntegration    UserEventType = "integration"
 	UserEventTypeEdgeConfig     UserEventType = "edge-config"
+	UserEventTypeFlag           UserEventType = "flag"
+	UserEventTypeFlagsSegment   UserEventType = "flags-segment"
+	UserEventTypeFlagsSettings  UserEventType = "flags-settings"
 	UserEventTypeLink           UserEventType = "link"
 	UserEventTypeProjectName    UserEventType = "project_name"
 	UserEventTypeScalingRules   UserEventType = "scaling_rules"
@@ -46,12 +46,6 @@ func (e *UserEventType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "flag":
-		fallthrough
-	case "flags-segment":
-		fallthrough
-	case "flags-settings":
-		fallthrough
 	case "author":
 		fallthrough
 	case "bitbucket_login":
@@ -73,6 +67,12 @@ func (e *UserEventType) UnmarshalJSON(data []byte) error {
 	case "integration":
 		fallthrough
 	case "edge-config":
+		fallthrough
+	case "flag":
+		fallthrough
+	case "flags-segment":
+		fallthrough
+	case "flags-settings":
 		fallthrough
 	case "link":
 		fallthrough
@@ -125,13 +125,13 @@ func (o *Entities) GetEnd() float64 {
 	return o.End
 }
 
-// User - Metadata for the User who generated the event.
+// User - Metadata for {@link userId}.
 type User struct {
 	Avatar   string  `json:"avatar"`
 	Email    string  `json:"email"`
+	Username string  `json:"username"`
 	Slug     *string `json:"slug,omitempty"`
 	UID      string  `json:"uid"`
-	Username string  `json:"username"`
 }
 
 func (o *User) GetAvatar() string {
@@ -148,6 +148,13 @@ func (o *User) GetEmail() string {
 	return o.Email
 }
 
+func (o *User) GetUsername() string {
+	if o == nil {
+		return ""
+	}
+	return o.Username
+}
+
 func (o *User) GetSlug() *string {
 	if o == nil {
 		return nil
@@ -162,11 +169,382 @@ func (o *User) GetUID() string {
 	return o.UID
 }
 
-func (o *User) GetUsername() string {
+type UserEventPrincipalType string
+
+const (
+	UserEventPrincipalTypeApp UserEventPrincipalType = "app"
+)
+
+func (e UserEventPrincipalType) ToPointer() *UserEventPrincipalType {
+	return &e
+}
+func (e *UserEventPrincipalType) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "app":
+		*e = UserEventPrincipalType(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for UserEventPrincipalType: %v", v)
+	}
+}
+
+// Two - Metadata for {@link principalId}.
+type Two struct {
+	Type     UserEventPrincipalType `json:"type"`
+	ClientID string                 `json:"clientId"`
+	Name     string                 `json:"name"`
+}
+
+func (o *Two) GetType() UserEventPrincipalType {
+	if o == nil {
+		return UserEventPrincipalType("")
+	}
+	return o.Type
+}
+
+func (o *Two) GetClientID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ClientID
+}
+
+func (o *Two) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
+}
+
+type PrincipalType string
+
+const (
+	PrincipalTypeUser PrincipalType = "user"
+)
+
+func (e PrincipalType) ToPointer() *PrincipalType {
+	return &e
+}
+func (e *PrincipalType) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "user":
+		*e = PrincipalType(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for PrincipalType: %v", v)
+	}
+}
+
+// One - Metadata for {@link principalId}.
+type One struct {
+	Type     *PrincipalType `json:"type,omitempty"`
+	Avatar   string         `json:"avatar"`
+	Email    string         `json:"email"`
+	Slug     *string        `json:"slug,omitempty"`
+	UID      string         `json:"uid"`
+	Username string         `json:"username"`
+}
+
+func (o *One) GetType() *PrincipalType {
+	if o == nil {
+		return nil
+	}
+	return o.Type
+}
+
+func (o *One) GetAvatar() string {
+	if o == nil {
+		return ""
+	}
+	return o.Avatar
+}
+
+func (o *One) GetEmail() string {
+	if o == nil {
+		return ""
+	}
+	return o.Email
+}
+
+func (o *One) GetSlug() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Slug
+}
+
+func (o *One) GetUID() string {
+	if o == nil {
+		return ""
+	}
+	return o.UID
+}
+
+func (o *One) GetUsername() string {
 	if o == nil {
 		return ""
 	}
 	return o.Username
+}
+
+type PrincipalUnionType string
+
+const (
+	PrincipalUnionTypeOne PrincipalUnionType = "1"
+	PrincipalUnionTypeTwo PrincipalUnionType = "2"
+)
+
+type Principal struct {
+	One *One
+	Two *Two
+
+	Type PrincipalUnionType
+}
+
+func CreatePrincipalOne(one One) Principal {
+	typ := PrincipalUnionTypeOne
+
+	return Principal{
+		One:  &one,
+		Type: typ,
+	}
+}
+
+func CreatePrincipalTwo(two Two) Principal {
+	typ := PrincipalUnionTypeTwo
+
+	return Principal{
+		Two:  &two,
+		Type: typ,
+	}
+}
+
+func (u *Principal) UnmarshalJSON(data []byte) error {
+
+	var two Two = Two{}
+	if err := utils.UnmarshalJSON(data, &two, "", true, true); err == nil {
+		u.Two = &two
+		u.Type = PrincipalUnionTypeTwo
+		return nil
+	}
+
+	var one One = One{}
+	if err := utils.UnmarshalJSON(data, &one, "", true, true); err == nil {
+		u.One = &one
+		u.Type = PrincipalUnionTypeOne
+		return nil
+	}
+
+	return fmt.Errorf("could not unmarshal `%s` into any supported union types for Principal", string(data))
+}
+
+func (u Principal) MarshalJSON() ([]byte, error) {
+	if u.One != nil {
+		return utils.MarshalJSON(u.One, "", true)
+	}
+
+	if u.Two != nil {
+		return utils.MarshalJSON(u.Two, "", true)
+	}
+
+	return nil, errors.New("could not marshal union type Principal: all fields are null")
+}
+
+type UserEventViaType string
+
+const (
+	UserEventViaTypeApp UserEventViaType = "app"
+)
+
+func (e UserEventViaType) ToPointer() *UserEventViaType {
+	return &e
+}
+func (e *UserEventViaType) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "app":
+		*e = UserEventViaType(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for UserEventViaType: %v", v)
+	}
+}
+
+// Via2 - Metadata for {@link viaIds}.
+type Via2 struct {
+	Type     UserEventViaType `json:"type"`
+	ClientID string           `json:"clientId"`
+	Name     string           `json:"name"`
+}
+
+func (o *Via2) GetType() UserEventViaType {
+	if o == nil {
+		return UserEventViaType("")
+	}
+	return o.Type
+}
+
+func (o *Via2) GetClientID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ClientID
+}
+
+func (o *Via2) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
+}
+
+type ViaType string
+
+const (
+	ViaTypeUser ViaType = "user"
+)
+
+func (e ViaType) ToPointer() *ViaType {
+	return &e
+}
+func (e *ViaType) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "user":
+		*e = ViaType(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for ViaType: %v", v)
+	}
+}
+
+// Via1 - Metadata for {@link viaIds}.
+type Via1 struct {
+	Type     *ViaType `json:"type,omitempty"`
+	Avatar   string   `json:"avatar"`
+	Email    string   `json:"email"`
+	Slug     *string  `json:"slug,omitempty"`
+	UID      string   `json:"uid"`
+	Username string   `json:"username"`
+}
+
+func (o *Via1) GetType() *ViaType {
+	if o == nil {
+		return nil
+	}
+	return o.Type
+}
+
+func (o *Via1) GetAvatar() string {
+	if o == nil {
+		return ""
+	}
+	return o.Avatar
+}
+
+func (o *Via1) GetEmail() string {
+	if o == nil {
+		return ""
+	}
+	return o.Email
+}
+
+func (o *Via1) GetSlug() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Slug
+}
+
+func (o *Via1) GetUID() string {
+	if o == nil {
+		return ""
+	}
+	return o.UID
+}
+
+func (o *Via1) GetUsername() string {
+	if o == nil {
+		return ""
+	}
+	return o.Username
+}
+
+type ViaUnionType string
+
+const (
+	ViaUnionTypeVia1 ViaUnionType = "via_1"
+	ViaUnionTypeVia2 ViaUnionType = "via_2"
+)
+
+type Via struct {
+	Via1 *Via1
+	Via2 *Via2
+
+	Type ViaUnionType
+}
+
+func CreateViaVia1(via1 Via1) Via {
+	typ := ViaUnionTypeVia1
+
+	return Via{
+		Via1: &via1,
+		Type: typ,
+	}
+}
+
+func CreateViaVia2(via2 Via2) Via {
+	typ := ViaUnionTypeVia2
+
+	return Via{
+		Via2: &via2,
+		Type: typ,
+	}
+}
+
+func (u *Via) UnmarshalJSON(data []byte) error {
+
+	var via2 Via2 = Via2{}
+	if err := utils.UnmarshalJSON(data, &via2, "", true, true); err == nil {
+		u.Via2 = &via2
+		u.Type = ViaUnionTypeVia2
+		return nil
+	}
+
+	var via1 Via1 = Via1{}
+	if err := utils.UnmarshalJSON(data, &via1, "", true, true); err == nil {
+		u.Via1 = &via1
+		u.Type = ViaUnionTypeVia1
+		return nil
+	}
+
+	return fmt.Errorf("could not unmarshal `%s` into any supported union types for Via", string(data))
+}
+
+func (u Via) MarshalJSON() ([]byte, error) {
+	if u.Via1 != nil {
+		return utils.MarshalJSON(u.Via1, "", true)
+	}
+
+	if u.Via2 != nil {
+		return utils.MarshalJSON(u.Via2, "", true)
+	}
+
+	return nil, errors.New("could not marshal union type Via: all fields are null")
 }
 
 type GrantType string
@@ -214,6 +592,7 @@ const (
 	AuthMethodOtp       AuthMethod = "otp"
 	AuthMethodSms       AuthMethod = "sms"
 	AuthMethodInvite    AuthMethod = "invite"
+	AuthMethodGoogle    AuthMethod = "google"
 )
 
 func (e AuthMethod) ToPointer() *AuthMethod {
@@ -244,6 +623,8 @@ func (e *AuthMethod) UnmarshalJSON(data []byte) error {
 	case "sms":
 		fallthrough
 	case "invite":
+		fallthrough
+	case "google":
 		*e = AuthMethod(v)
 		return nil
 	default:
@@ -251,8 +632,8 @@ func (e *AuthMethod) UnmarshalJSON(data []byte) error {
 	}
 }
 
-// OneHundredAndFortySeven - The payload of the event, if requested.
-type OneHundredAndFortySeven struct {
+// OneHundredAndFortyEight - The payload of the event, if requested.
+type OneHundredAndFortyEight struct {
 	GrantType GrantType `json:"grantType"`
 	AppName   string    `json:"appName"`
 	// access_token TTL
@@ -263,46 +644,139 @@ type OneHundredAndFortySeven struct {
 	AuthMethod AuthMethod `json:"authMethod"`
 }
 
-func (o *OneHundredAndFortySeven) GetGrantType() GrantType {
+func (o *OneHundredAndFortyEight) GetGrantType() GrantType {
 	if o == nil {
 		return GrantType("")
 	}
 	return o.GrantType
 }
 
-func (o *OneHundredAndFortySeven) GetAppName() string {
+func (o *OneHundredAndFortyEight) GetAppName() string {
 	if o == nil {
 		return ""
 	}
 	return o.AppName
 }
 
-func (o *OneHundredAndFortySeven) GetAtTTL() float64 {
+func (o *OneHundredAndFortyEight) GetAtTTL() float64 {
 	if o == nil {
 		return 0.0
 	}
 	return o.AtTTL
 }
 
-func (o *OneHundredAndFortySeven) GetRtTTL() *float64 {
+func (o *OneHundredAndFortyEight) GetRtTTL() *float64 {
 	if o == nil {
 		return nil
 	}
 	return o.RtTTL
 }
 
-func (o *OneHundredAndFortySeven) GetScope() string {
+func (o *OneHundredAndFortyEight) GetScope() string {
 	if o == nil {
 		return ""
 	}
 	return o.Scope
 }
 
-func (o *OneHundredAndFortySeven) GetAuthMethod() AuthMethod {
+func (o *OneHundredAndFortyEight) GetAuthMethod() AuthMethod {
 	if o == nil {
 		return AuthMethod("")
 	}
 	return o.AuthMethod
+}
+
+type UserEventPayload147Team struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (o *UserEventPayload147Team) GetID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ID
+}
+
+func (o *UserEventPayload147Team) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
+}
+
+type UserEventPayload147Configuration struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name,omitempty"`
+}
+
+func (o *UserEventPayload147Configuration) GetID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ID
+}
+
+func (o *UserEventPayload147Configuration) GetName() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Name
+}
+
+type UserEventPayloadPeering struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name,omitempty"`
+}
+
+func (o *UserEventPayloadPeering) GetID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ID
+}
+
+func (o *UserEventPayloadPeering) GetName() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Name
+}
+
+// OneHundredAndFortySeven - The payload of the event, if requested.
+type OneHundredAndFortySeven struct {
+	Team          UserEventPayload147Team          `json:"team"`
+	Configuration UserEventPayload147Configuration `json:"configuration"`
+	Peering       UserEventPayloadPeering          `json:"peering"`
+	NewName       *string                          `json:"newName,omitempty"`
+}
+
+func (o *OneHundredAndFortySeven) GetTeam() UserEventPayload147Team {
+	if o == nil {
+		return UserEventPayload147Team{}
+	}
+	return o.Team
+}
+
+func (o *OneHundredAndFortySeven) GetConfiguration() UserEventPayload147Configuration {
+	if o == nil {
+		return UserEventPayload147Configuration{}
+	}
+	return o.Configuration
+}
+
+func (o *OneHundredAndFortySeven) GetPeering() UserEventPayloadPeering {
+	if o == nil {
+		return UserEventPayloadPeering{}
+	}
+	return o.Peering
+}
+
+func (o *OneHundredAndFortySeven) GetNewName() *string {
+	if o == nil {
+		return nil
+	}
+	return o.NewName
 }
 
 type UserEventPayload146Team struct {
@@ -343,19 +817,19 @@ func (o *UserEventPayload146Configuration) GetName() *string {
 	return o.Name
 }
 
-type UserEventPayloadPeering struct {
+type PayloadPeering struct {
 	ID   string  `json:"id"`
 	Name *string `json:"name,omitempty"`
 }
 
-func (o *UserEventPayloadPeering) GetID() string {
+func (o *PayloadPeering) GetID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ID
 }
 
-func (o *UserEventPayloadPeering) GetName() *string {
+func (o *PayloadPeering) GetName() *string {
 	if o == nil {
 		return nil
 	}
@@ -366,8 +840,7 @@ func (o *UserEventPayloadPeering) GetName() *string {
 type OneHundredAndFortySix struct {
 	Team          UserEventPayload146Team          `json:"team"`
 	Configuration UserEventPayload146Configuration `json:"configuration"`
-	Peering       UserEventPayloadPeering          `json:"peering"`
-	NewName       *string                          `json:"newName,omitempty"`
+	Peering       PayloadPeering                   `json:"peering"`
 }
 
 func (o *OneHundredAndFortySix) GetTeam() UserEventPayload146Team {
@@ -384,18 +857,11 @@ func (o *OneHundredAndFortySix) GetConfiguration() UserEventPayload146Configurat
 	return o.Configuration
 }
 
-func (o *OneHundredAndFortySix) GetPeering() UserEventPayloadPeering {
+func (o *OneHundredAndFortySix) GetPeering() PayloadPeering {
 	if o == nil {
-		return UserEventPayloadPeering{}
+		return PayloadPeering{}
 	}
 	return o.Peering
-}
-
-func (o *OneHundredAndFortySix) GetNewName() *string {
-	if o == nil {
-		return nil
-	}
-	return o.NewName
 }
 
 type UserEventPayload145Team struct {
@@ -430,91 +896,6 @@ func (o *UserEventPayload145Configuration) GetID() string {
 }
 
 func (o *UserEventPayload145Configuration) GetName() *string {
-	if o == nil {
-		return nil
-	}
-	return o.Name
-}
-
-type PayloadPeering struct {
-	ID   string  `json:"id"`
-	Name *string `json:"name,omitempty"`
-}
-
-func (o *PayloadPeering) GetID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ID
-}
-
-func (o *PayloadPeering) GetName() *string {
-	if o == nil {
-		return nil
-	}
-	return o.Name
-}
-
-// OneHundredAndFortyFive - The payload of the event, if requested.
-type OneHundredAndFortyFive struct {
-	Team          UserEventPayload145Team          `json:"team"`
-	Configuration UserEventPayload145Configuration `json:"configuration"`
-	Peering       PayloadPeering                   `json:"peering"`
-}
-
-func (o *OneHundredAndFortyFive) GetTeam() UserEventPayload145Team {
-	if o == nil {
-		return UserEventPayload145Team{}
-	}
-	return o.Team
-}
-
-func (o *OneHundredAndFortyFive) GetConfiguration() UserEventPayload145Configuration {
-	if o == nil {
-		return UserEventPayload145Configuration{}
-	}
-	return o.Configuration
-}
-
-func (o *OneHundredAndFortyFive) GetPeering() PayloadPeering {
-	if o == nil {
-		return PayloadPeering{}
-	}
-	return o.Peering
-}
-
-type UserEventPayload144Team struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-func (o *UserEventPayload144Team) GetID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ID
-}
-
-func (o *UserEventPayload144Team) GetName() string {
-	if o == nil {
-		return ""
-	}
-	return o.Name
-}
-
-type UserEventPayload144Configuration struct {
-	ID   string  `json:"id"`
-	Name *string `json:"name,omitempty"`
-}
-
-func (o *UserEventPayload144Configuration) GetID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ID
-}
-
-func (o *UserEventPayload144Configuration) GetName() *string {
 	if o == nil {
 		return nil
 	}
@@ -556,37 +937,50 @@ func (o *Peering) GetVpcID() string {
 	return o.VpcID
 }
 
-// OneHundredAndFortyFour - The payload of the event, if requested.
-type OneHundredAndFortyFour struct {
-	Team          UserEventPayload144Team          `json:"team"`
-	Configuration UserEventPayload144Configuration `json:"configuration"`
+// OneHundredAndFortyFive - The payload of the event, if requested.
+type OneHundredAndFortyFive struct {
+	Team          UserEventPayload145Team          `json:"team"`
+	Configuration UserEventPayload145Configuration `json:"configuration"`
 	Peering       Peering                          `json:"peering"`
 }
 
-func (o *OneHundredAndFortyFour) GetTeam() UserEventPayload144Team {
+func (o *OneHundredAndFortyFive) GetTeam() UserEventPayload145Team {
 	if o == nil {
-		return UserEventPayload144Team{}
+		return UserEventPayload145Team{}
 	}
 	return o.Team
 }
 
-func (o *OneHundredAndFortyFour) GetConfiguration() UserEventPayload144Configuration {
+func (o *OneHundredAndFortyFive) GetConfiguration() UserEventPayload145Configuration {
 	if o == nil {
-		return UserEventPayload144Configuration{}
+		return UserEventPayload145Configuration{}
 	}
 	return o.Configuration
 }
 
-func (o *OneHundredAndFortyFour) GetPeering() Peering {
+func (o *OneHundredAndFortyFive) GetPeering() Peering {
 	if o == nil {
 		return Peering{}
 	}
 	return o.Peering
 }
 
+// OneHundredAndFortyFour - The payload of the event, if requested.
+type OneHundredAndFortyFour struct {
+	AppName string `json:"appName"`
+}
+
+func (o *OneHundredAndFortyFour) GetAppName() string {
+	if o == nil {
+		return ""
+	}
+	return o.AppName
+}
+
 // OneHundredAndFortyThree - The payload of the event, if requested.
 type OneHundredAndFortyThree struct {
-	AppName string `json:"appName"`
+	AppName    string   `json:"appName"`
+	NextScopes []string `json:"nextScopes"`
 }
 
 func (o *OneHundredAndFortyThree) GetAppName() string {
@@ -596,10 +990,17 @@ func (o *OneHundredAndFortyThree) GetAppName() string {
 	return o.AppName
 }
 
+func (o *OneHundredAndFortyThree) GetNextScopes() []string {
+	if o == nil {
+		return []string{}
+	}
+	return o.NextScopes
+}
+
 // OneHundredAndFortyTwo - The payload of the event, if requested.
 type OneHundredAndFortyTwo struct {
-	AppName    string   `json:"appName"`
-	NextScopes []string `json:"nextScopes"`
+	AppName string   `json:"appName"`
+	Scopes  []string `json:"scopes"`
 }
 
 func (o *OneHundredAndFortyTwo) GetAppName() string {
@@ -609,47 +1010,27 @@ func (o *OneHundredAndFortyTwo) GetAppName() string {
 	return o.AppName
 }
 
-func (o *OneHundredAndFortyTwo) GetNextScopes() []string {
-	if o == nil {
-		return []string{}
-	}
-	return o.NextScopes
-}
-
-// OneHundredAndFortyOne - The payload of the event, if requested.
-type OneHundredAndFortyOne struct {
-	AppName string   `json:"appName"`
-	Scopes  []string `json:"scopes"`
-}
-
-func (o *OneHundredAndFortyOne) GetAppName() string {
-	if o == nil {
-		return ""
-	}
-	return o.AppName
-}
-
-func (o *OneHundredAndFortyOne) GetScopes() []string {
+func (o *OneHundredAndFortyTwo) GetScopes() []string {
 	if o == nil {
 		return []string{}
 	}
 	return o.Scopes
 }
 
-// OneHundredAndForty - The payload of the event, if requested.
-type OneHundredAndForty struct {
+// OneHundredAndFortyOne - The payload of the event, if requested.
+type OneHundredAndFortyOne struct {
 	OldName string `json:"oldName"`
 	NewName string `json:"newName"`
 }
 
-func (o *OneHundredAndForty) GetOldName() string {
+func (o *OneHundredAndFortyOne) GetOldName() string {
 	if o == nil {
 		return ""
 	}
 	return o.OldName
 }
 
-func (o *OneHundredAndForty) GetNewName() string {
+func (o *OneHundredAndFortyOne) GetNewName() string {
 	if o == nil {
 		return ""
 	}
@@ -682,12 +1063,12 @@ func (e *Tier) UnmarshalJSON(data []byte) error {
 	}
 }
 
-// OneHundredAndThirtyNine - The payload of the event, if requested.
-type OneHundredAndThirtyNine struct {
+// OneHundredAndForty - The payload of the event, if requested.
+type OneHundredAndForty struct {
 	Tier Tier `json:"tier"`
 }
 
-func (o *OneHundredAndThirtyNine) GetTier() Tier {
+func (o *OneHundredAndForty) GetTier() Tier {
 	if o == nil {
 		return Tier("")
 	}
@@ -780,36 +1161,36 @@ func (o *PrevProjectWebAnalytics) GetHasData() *bool {
 	return o.HasData
 }
 
-// OneHundredAndThirtyEight - The payload of the event, if requested.
-type OneHundredAndThirtyEight struct {
+// OneHundredAndThirtyNine - The payload of the event, if requested.
+type OneHundredAndThirtyNine struct {
 	ProjectID               string                   `json:"projectId"`
 	ProjectName             string                   `json:"projectName"`
 	ProjectWebAnalytics     *ProjectWebAnalytics     `json:"projectWebAnalytics,omitempty"`
 	PrevProjectWebAnalytics *PrevProjectWebAnalytics `json:"prevProjectWebAnalytics,omitempty"`
 }
 
-func (o *OneHundredAndThirtyEight) GetProjectID() string {
+func (o *OneHundredAndThirtyNine) GetProjectID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ProjectID
 }
 
-func (o *OneHundredAndThirtyEight) GetProjectName() string {
+func (o *OneHundredAndThirtyNine) GetProjectName() string {
 	if o == nil {
 		return ""
 	}
 	return o.ProjectName
 }
 
-func (o *OneHundredAndThirtyEight) GetProjectWebAnalytics() *ProjectWebAnalytics {
+func (o *OneHundredAndThirtyNine) GetProjectWebAnalytics() *ProjectWebAnalytics {
 	if o == nil {
 		return nil
 	}
 	return o.ProjectWebAnalytics
 }
 
-func (o *OneHundredAndThirtyEight) GetPrevProjectWebAnalytics() *PrevProjectWebAnalytics {
+func (o *OneHundredAndThirtyNine) GetPrevProjectWebAnalytics() *PrevProjectWebAnalytics {
 	if o == nil {
 		return nil
 	}
@@ -852,7 +1233,7 @@ type Microfrontends1 struct {
 	Enabled bool `json:"enabled"`
 	// Whether this project is the default application for the microfrontends group. The default application is the one that is used as the top level shell for the microfrontends group and hosts the other microfrontends.
 	IsDefaultApp *bool `json:"isDefaultApp,omitempty"`
-	// A path that is used to take screenshots and as the default path in preview links when a domain for this microfrontend is shown in the UI.
+	// A path that is used to take screenshots and as the default path in preview links when a domain for this microfrontend is shown in the UI. Includes the leading slash, e.g. `/docs`
 	DefaultRoute *string `json:"defaultRoute,omitempty"`
 	// Whether observability data should be routed to this microfrontend project or a root project.
 	RouteObservabilityToThisProject *bool `json:"routeObservabilityToThisProject,omitempty"`
@@ -963,27 +1344,27 @@ func (u Microfrontends) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type Microfrontends: all fields are null")
 }
 
-type UserEventPayload137Project struct {
+type UserEventPayload138Project struct {
 	ID             string          `json:"id"`
 	Name           string          `json:"name"`
 	Microfrontends *Microfrontends `json:"microfrontends,omitempty"`
 }
 
-func (o *UserEventPayload137Project) GetID() string {
+func (o *UserEventPayload138Project) GetID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ID
 }
 
-func (o *UserEventPayload137Project) GetName() string {
+func (o *UserEventPayload138Project) GetName() string {
 	if o == nil {
 		return ""
 	}
 	return o.Name
 }
 
-func (o *UserEventPayload137Project) GetMicrofrontends() *Microfrontends {
+func (o *UserEventPayload138Project) GetMicrofrontends() *Microfrontends {
 	if o == nil {
 		return nil
 	}
@@ -1026,7 +1407,7 @@ type UserEventMicrofrontends1 struct {
 	Enabled bool `json:"enabled"`
 	// Whether this project is the default application for the microfrontends group. The default application is the one that is used as the top level shell for the microfrontends group and hosts the other microfrontends.
 	IsDefaultApp *bool `json:"isDefaultApp,omitempty"`
-	// A path that is used to take screenshots and as the default path in preview links when a domain for this microfrontend is shown in the UI.
+	// A path that is used to take screenshots and as the default path in preview links when a domain for this microfrontend is shown in the UI. Includes the leading slash, e.g. `/docs`
 	DefaultRoute *string `json:"defaultRoute,omitempty"`
 	// Whether observability data should be routed to this microfrontend project or a root project.
 	RouteObservabilityToThisProject *bool `json:"routeObservabilityToThisProject,omitempty"`
@@ -1137,11 +1518,11 @@ func (u PayloadMicrofrontends) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("could not marshal union type PayloadMicrofrontends: all fields are null")
 }
 
-type UserEventPayload137PrevProject struct {
+type UserEventPayload138PrevProject struct {
 	Microfrontends *PayloadMicrofrontends `json:"microfrontends,omitempty"`
 }
 
-func (o *UserEventPayload137PrevProject) GetMicrofrontends() *PayloadMicrofrontends {
+func (o *UserEventPayload138PrevProject) GetMicrofrontends() *PayloadMicrofrontends {
 	if o == nil {
 		return nil
 	}
@@ -1149,12 +1530,12 @@ func (o *UserEventPayload137PrevProject) GetMicrofrontends() *PayloadMicrofronte
 }
 
 type PayloadPrev struct {
-	Project UserEventPayload137PrevProject `json:"project"`
+	Project UserEventPayload138PrevProject `json:"project"`
 }
 
-func (o *PayloadPrev) GetProject() UserEventPayload137PrevProject {
+func (o *PayloadPrev) GetProject() UserEventPayload138PrevProject {
 	if o == nil {
-		return UserEventPayload137PrevProject{}
+		return UserEventPayload138PrevProject{}
 	}
 	return o.Project
 }
@@ -1186,47 +1567,47 @@ func (o *PayloadGroup) GetName() string {
 	return o.Name
 }
 
-// OneHundredAndThirtySeven - The payload of the event, if requested.
-type OneHundredAndThirtySeven struct {
-	Project UserEventPayload137Project `json:"project"`
+// OneHundredAndThirtyEight - The payload of the event, if requested.
+type OneHundredAndThirtyEight struct {
+	Project UserEventPayload138Project `json:"project"`
 	Prev    PayloadPrev                `json:"prev"`
 	Group   PayloadGroup               `json:"group"`
 }
 
-func (o *OneHundredAndThirtySeven) GetProject() UserEventPayload137Project {
+func (o *OneHundredAndThirtyEight) GetProject() UserEventPayload138Project {
 	if o == nil {
-		return UserEventPayload137Project{}
+		return UserEventPayload138Project{}
 	}
 	return o.Project
 }
 
-func (o *OneHundredAndThirtySeven) GetPrev() PayloadPrev {
+func (o *OneHundredAndThirtyEight) GetPrev() PayloadPrev {
 	if o == nil {
 		return PayloadPrev{}
 	}
 	return o.Prev
 }
 
-func (o *OneHundredAndThirtySeven) GetGroup() PayloadGroup {
+func (o *OneHundredAndThirtyEight) GetGroup() PayloadGroup {
 	if o == nil {
 		return PayloadGroup{}
 	}
 	return o.Group
 }
 
-type UserEventPayload136Project struct {
+type UserEventPayload137Project struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-func (o *UserEventPayload136Project) GetID() string {
+func (o *UserEventPayload137Project) GetID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ID
 }
 
-func (o *UserEventPayload136Project) GetName() string {
+func (o *UserEventPayload137Project) GetName() string {
 	if o == nil {
 		return ""
 	}
@@ -1260,20 +1641,20 @@ func (o *Group) GetName() string {
 	return o.Name
 }
 
-// OneHundredAndThirtySix - The payload of the event, if requested.
-type OneHundredAndThirtySix struct {
-	Project UserEventPayload136Project `json:"project"`
+// OneHundredAndThirtySeven - The payload of the event, if requested.
+type OneHundredAndThirtySeven struct {
+	Project UserEventPayload137Project `json:"project"`
 	Group   Group                      `json:"group"`
 }
 
-func (o *OneHundredAndThirtySix) GetProject() UserEventPayload136Project {
+func (o *OneHundredAndThirtySeven) GetProject() UserEventPayload137Project {
 	if o == nil {
-		return UserEventPayload136Project{}
+		return UserEventPayload137Project{}
 	}
 	return o.Project
 }
 
-func (o *OneHundredAndThirtySix) GetGroup() Group {
+func (o *OneHundredAndThirtySeven) GetGroup() Group {
 	if o == nil {
 		return Group{}
 	}
@@ -1299,12 +1680,47 @@ func (o *Prev) GetSlug() string {
 	return o.Slug
 }
 
+// OneHundredAndThirtySix - The payload of the event, if requested.
+type OneHundredAndThirtySix struct {
+	ID   string `json:"id"`
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+	Prev Prev   `json:"prev"`
+}
+
+func (o *OneHundredAndThirtySix) GetID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ID
+}
+
+func (o *OneHundredAndThirtySix) GetSlug() string {
+	if o == nil {
+		return ""
+	}
+	return o.Slug
+}
+
+func (o *OneHundredAndThirtySix) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
+}
+
+func (o *OneHundredAndThirtySix) GetPrev() Prev {
+	if o == nil {
+		return Prev{}
+	}
+	return o.Prev
+}
+
 // OneHundredAndThirtyFive - The payload of the event, if requested.
 type OneHundredAndThirtyFive struct {
 	ID   string `json:"id"`
 	Slug string `json:"slug"`
 	Name string `json:"name"`
-	Prev Prev   `json:"prev"`
 }
 
 func (o *OneHundredAndThirtyFive) GetID() string {
@@ -1328,47 +1744,41 @@ func (o *OneHundredAndThirtyFive) GetName() string {
 	return o.Name
 }
 
-func (o *OneHundredAndThirtyFive) GetPrev() Prev {
-	if o == nil {
-		return Prev{}
-	}
-	return o.Prev
-}
-
 // OneHundredAndThirtyFour - The payload of the event, if requested.
 type OneHundredAndThirtyFour struct {
-	ID   string `json:"id"`
-	Slug string `json:"slug"`
-	Name string `json:"name"`
-}
-
-func (o *OneHundredAndThirtyFour) GetID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ID
-}
-
-func (o *OneHundredAndThirtyFour) GetSlug() string {
-	if o == nil {
-		return ""
-	}
-	return o.Slug
-}
-
-func (o *OneHundredAndThirtyFour) GetName() string {
-	if o == nil {
-		return ""
-	}
-	return o.Name
-}
-
-// OneHundredAndThirtyThree - The payload of the event, if requested.
-type OneHundredAndThirtyThree struct {
 	EdgeConfigID   string `json:"edgeConfigId"`
 	EdgeConfigSlug string `json:"edgeConfigSlug"`
 	// ids of deleted tokens
 	EdgeConfigTokenIds []string `json:"edgeConfigTokenIds"`
+}
+
+func (o *OneHundredAndThirtyFour) GetEdgeConfigID() string {
+	if o == nil {
+		return ""
+	}
+	return o.EdgeConfigID
+}
+
+func (o *OneHundredAndThirtyFour) GetEdgeConfigSlug() string {
+	if o == nil {
+		return ""
+	}
+	return o.EdgeConfigSlug
+}
+
+func (o *OneHundredAndThirtyFour) GetEdgeConfigTokenIds() []string {
+	if o == nil {
+		return []string{}
+	}
+	return o.EdgeConfigTokenIds
+}
+
+// OneHundredAndThirtyThree - The payload of the event, if requested.
+type OneHundredAndThirtyThree struct {
+	EdgeConfigID      string `json:"edgeConfigId"`
+	EdgeConfigSlug    string `json:"edgeConfigSlug"`
+	EdgeConfigTokenID string `json:"edgeConfigTokenId"`
+	Label             string `json:"label"`
 }
 
 func (o *OneHundredAndThirtyThree) GetEdgeConfigID() string {
@@ -1385,19 +1795,25 @@ func (o *OneHundredAndThirtyThree) GetEdgeConfigSlug() string {
 	return o.EdgeConfigSlug
 }
 
-func (o *OneHundredAndThirtyThree) GetEdgeConfigTokenIds() []string {
+func (o *OneHundredAndThirtyThree) GetEdgeConfigTokenID() string {
 	if o == nil {
-		return []string{}
+		return ""
 	}
-	return o.EdgeConfigTokenIds
+	return o.EdgeConfigTokenID
+}
+
+func (o *OneHundredAndThirtyThree) GetLabel() string {
+	if o == nil {
+		return ""
+	}
+	return o.Label
 }
 
 // OneHundredAndThirtyTwo - The payload of the event, if requested.
 type OneHundredAndThirtyTwo struct {
-	EdgeConfigID      string `json:"edgeConfigId"`
-	EdgeConfigSlug    string `json:"edgeConfigSlug"`
-	EdgeConfigTokenID string `json:"edgeConfigTokenId"`
-	Label             string `json:"label"`
+	EdgeConfigID     string `json:"edgeConfigId"`
+	EdgeConfigSlug   string `json:"edgeConfigSlug"`
+	EdgeConfigDigest string `json:"edgeConfigDigest"`
 }
 
 func (o *OneHundredAndThirtyTwo) GetEdgeConfigID() string {
@@ -1414,46 +1830,114 @@ func (o *OneHundredAndThirtyTwo) GetEdgeConfigSlug() string {
 	return o.EdgeConfigSlug
 }
 
-func (o *OneHundredAndThirtyTwo) GetEdgeConfigTokenID() string {
-	if o == nil {
-		return ""
-	}
-	return o.EdgeConfigTokenID
-}
-
-func (o *OneHundredAndThirtyTwo) GetLabel() string {
-	if o == nil {
-		return ""
-	}
-	return o.Label
-}
-
-// OneHundredAndThirtyOne - The payload of the event, if requested.
-type OneHundredAndThirtyOne struct {
-	EdgeConfigID     string `json:"edgeConfigId"`
-	EdgeConfigSlug   string `json:"edgeConfigSlug"`
-	EdgeConfigDigest string `json:"edgeConfigDigest"`
-}
-
-func (o *OneHundredAndThirtyOne) GetEdgeConfigID() string {
-	if o == nil {
-		return ""
-	}
-	return o.EdgeConfigID
-}
-
-func (o *OneHundredAndThirtyOne) GetEdgeConfigSlug() string {
-	if o == nil {
-		return ""
-	}
-	return o.EdgeConfigSlug
-}
-
-func (o *OneHundredAndThirtyOne) GetEdgeConfigDigest() string {
+func (o *OneHundredAndThirtyTwo) GetEdgeConfigDigest() string {
 	if o == nil {
 		return ""
 	}
 	return o.EdgeConfigDigest
+}
+
+type UserEventPayload131Role string
+
+const (
+	UserEventPayload131RoleAdmin            UserEventPayload131Role = "ADMIN"
+	UserEventPayload131RoleProjectDeveloper UserEventPayload131Role = "PROJECT_DEVELOPER"
+	UserEventPayload131RoleProjectViewer    UserEventPayload131Role = "PROJECT_VIEWER"
+)
+
+func (e UserEventPayload131Role) ToPointer() *UserEventPayload131Role {
+	return &e
+}
+func (e *UserEventPayload131Role) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "ADMIN":
+		fallthrough
+	case "PROJECT_DEVELOPER":
+		fallthrough
+	case "PROJECT_VIEWER":
+		*e = UserEventPayload131Role(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for UserEventPayload131Role: %v", v)
+	}
+}
+
+type UserEventPayload131Project struct {
+	Name            string                  `json:"name"`
+	Role            UserEventPayload131Role `json:"role"`
+	InvitedUserName string                  `json:"invitedUserName"`
+	ID              *string                 `json:"id,omitempty"`
+	InvitedUserID   *string                 `json:"invitedUserId,omitempty"`
+}
+
+func (o *UserEventPayload131Project) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
+}
+
+func (o *UserEventPayload131Project) GetRole() UserEventPayload131Role {
+	if o == nil {
+		return UserEventPayload131Role("")
+	}
+	return o.Role
+}
+
+func (o *UserEventPayload131Project) GetInvitedUserName() string {
+	if o == nil {
+		return ""
+	}
+	return o.InvitedUserName
+}
+
+func (o *UserEventPayload131Project) GetID() *string {
+	if o == nil {
+		return nil
+	}
+	return o.ID
+}
+
+func (o *UserEventPayload131Project) GetInvitedUserID() *string {
+	if o == nil {
+		return nil
+	}
+	return o.InvitedUserID
+}
+
+// OneHundredAndThirtyOne - The payload of the event, if requested.
+type OneHundredAndThirtyOne struct {
+	Project UserEventPayload131Project `json:"project"`
+}
+
+func (o *OneHundredAndThirtyOne) GetProject() UserEventPayload131Project {
+	if o == nil {
+		return UserEventPayload131Project{}
+	}
+	return o.Project
+}
+
+type UserEventPayload130Project struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (o *UserEventPayload130Project) GetID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ID
+}
+
+func (o *UserEventPayload130Project) GetName() string {
+	if o == nil {
+		return ""
+	}
+	return o.Name
 }
 
 type UserEventPayload130Role string
@@ -1482,109 +1966,6 @@ func (e *UserEventPayload130Role) UnmarshalJSON(data []byte) error {
 		return nil
 	default:
 		return fmt.Errorf("invalid value for UserEventPayload130Role: %v", v)
-	}
-}
-
-type UserEventPayload130Project struct {
-	Name            string                  `json:"name"`
-	Role            UserEventPayload130Role `json:"role"`
-	InvitedUserName string                  `json:"invitedUserName"`
-	ID              *string                 `json:"id,omitempty"`
-	InvitedUserID   *string                 `json:"invitedUserId,omitempty"`
-}
-
-func (o *UserEventPayload130Project) GetName() string {
-	if o == nil {
-		return ""
-	}
-	return o.Name
-}
-
-func (o *UserEventPayload130Project) GetRole() UserEventPayload130Role {
-	if o == nil {
-		return UserEventPayload130Role("")
-	}
-	return o.Role
-}
-
-func (o *UserEventPayload130Project) GetInvitedUserName() string {
-	if o == nil {
-		return ""
-	}
-	return o.InvitedUserName
-}
-
-func (o *UserEventPayload130Project) GetID() *string {
-	if o == nil {
-		return nil
-	}
-	return o.ID
-}
-
-func (o *UserEventPayload130Project) GetInvitedUserID() *string {
-	if o == nil {
-		return nil
-	}
-	return o.InvitedUserID
-}
-
-// OneHundredAndThirty - The payload of the event, if requested.
-type OneHundredAndThirty struct {
-	Project UserEventPayload130Project `json:"project"`
-}
-
-func (o *OneHundredAndThirty) GetProject() UserEventPayload130Project {
-	if o == nil {
-		return UserEventPayload130Project{}
-	}
-	return o.Project
-}
-
-type UserEventPayload129Project struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-func (o *UserEventPayload129Project) GetID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ID
-}
-
-func (o *UserEventPayload129Project) GetName() string {
-	if o == nil {
-		return ""
-	}
-	return o.Name
-}
-
-type UserEventPayload129Role string
-
-const (
-	UserEventPayload129RoleAdmin            UserEventPayload129Role = "ADMIN"
-	UserEventPayload129RoleProjectDeveloper UserEventPayload129Role = "PROJECT_DEVELOPER"
-	UserEventPayload129RoleProjectViewer    UserEventPayload129Role = "PROJECT_VIEWER"
-)
-
-func (e UserEventPayload129Role) ToPointer() *UserEventPayload129Role {
-	return &e
-}
-func (e *UserEventPayload129Role) UnmarshalJSON(data []byte) error {
-	var v string
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
-	}
-	switch v {
-	case "ADMIN":
-		fallthrough
-	case "PROJECT_DEVELOPER":
-		fallthrough
-	case "PROJECT_VIEWER":
-		*e = UserEventPayload129Role(v)
-		return nil
-	default:
-		return fmt.Errorf("invalid value for UserEventPayload129Role: %v", v)
 	}
 }
 
@@ -1618,14 +1999,14 @@ func (e *PreviousRole) UnmarshalJSON(data []byte) error {
 }
 
 type PayloadProjectMembership struct {
-	Role         *UserEventPayload129Role `json:"role,omitempty"`
+	Role         *UserEventPayload130Role `json:"role,omitempty"`
 	UID          *string                  `json:"uid,omitempty"`
 	CreatedAt    *float64                 `json:"createdAt,omitempty"`
 	Username     *string                  `json:"username,omitempty"`
 	PreviousRole *PreviousRole            `json:"previousRole,omitempty"`
 }
 
-func (o *PayloadProjectMembership) GetRole() *UserEventPayload129Role {
+func (o *PayloadProjectMembership) GetRole() *UserEventPayload130Role {
 	if o == nil {
 		return nil
 	}
@@ -1660,39 +2041,39 @@ func (o *PayloadProjectMembership) GetPreviousRole() *PreviousRole {
 	return o.PreviousRole
 }
 
-// OneHundredAndTwentyNine - The payload of the event, if requested.
-type OneHundredAndTwentyNine struct {
-	Project           UserEventPayload129Project `json:"project"`
+// OneHundredAndThirty - The payload of the event, if requested.
+type OneHundredAndThirty struct {
+	Project           UserEventPayload130Project `json:"project"`
 	ProjectMembership PayloadProjectMembership   `json:"projectMembership"`
 }
 
-func (o *OneHundredAndTwentyNine) GetProject() UserEventPayload129Project {
+func (o *OneHundredAndThirty) GetProject() UserEventPayload130Project {
 	if o == nil {
-		return UserEventPayload129Project{}
+		return UserEventPayload130Project{}
 	}
 	return o.Project
 }
 
-func (o *OneHundredAndTwentyNine) GetProjectMembership() PayloadProjectMembership {
+func (o *OneHundredAndThirty) GetProjectMembership() PayloadProjectMembership {
 	if o == nil {
 		return PayloadProjectMembership{}
 	}
 	return o.ProjectMembership
 }
 
-type UserEventPayload128Project struct {
+type UserEventPayload129Project struct {
 	Name string  `json:"name"`
 	ID   *string `json:"id,omitempty"`
 }
 
-func (o *UserEventPayload128Project) GetName() string {
+func (o *UserEventPayload129Project) GetName() string {
 	if o == nil {
 		return ""
 	}
 	return o.Name
 }
 
-func (o *UserEventPayload128Project) GetID() *string {
+func (o *UserEventPayload129Project) GetID() *string {
 	if o == nil {
 		return nil
 	}
@@ -1763,39 +2144,39 @@ func (o *RemovedMembership) GetUsername() *string {
 	return o.Username
 }
 
-// OneHundredAndTwentyEight - The payload of the event, if requested.
-type OneHundredAndTwentyEight struct {
-	Project           UserEventPayload128Project `json:"project"`
+// OneHundredAndTwentyNine - The payload of the event, if requested.
+type OneHundredAndTwentyNine struct {
+	Project           UserEventPayload129Project `json:"project"`
 	RemovedMembership RemovedMembership          `json:"removedMembership"`
 }
 
-func (o *OneHundredAndTwentyEight) GetProject() UserEventPayload128Project {
+func (o *OneHundredAndTwentyNine) GetProject() UserEventPayload129Project {
 	if o == nil {
-		return UserEventPayload128Project{}
+		return UserEventPayload129Project{}
 	}
 	return o.Project
 }
 
-func (o *OneHundredAndTwentyEight) GetRemovedMembership() RemovedMembership {
+func (o *OneHundredAndTwentyNine) GetRemovedMembership() RemovedMembership {
 	if o == nil {
 		return RemovedMembership{}
 	}
 	return o.RemovedMembership
 }
 
-type UserEventPayload127Project struct {
+type UserEventPayload128Project struct {
 	Name string  `json:"name"`
 	ID   *string `json:"id,omitempty"`
 }
 
-func (o *UserEventPayload127Project) GetName() string {
+func (o *UserEventPayload128Project) GetName() string {
 	if o == nil {
 		return ""
 	}
 	return o.Name
 }
 
-func (o *UserEventPayload127Project) GetID() *string {
+func (o *UserEventPayload128Project) GetID() *string {
 	if o == nil {
 		return nil
 	}
@@ -1866,32 +2247,68 @@ func (o *ProjectMembership) GetUsername() *string {
 	return o.Username
 }
 
-// OneHundredAndTwentySeven - The payload of the event, if requested.
-type OneHundredAndTwentySeven struct {
-	Project           UserEventPayload127Project `json:"project"`
+// OneHundredAndTwentyEight - The payload of the event, if requested.
+type OneHundredAndTwentyEight struct {
+	Project           UserEventPayload128Project `json:"project"`
 	ProjectMembership *ProjectMembership         `json:"projectMembership"`
 }
 
-func (o *OneHundredAndTwentySeven) GetProject() UserEventPayload127Project {
+func (o *OneHundredAndTwentyEight) GetProject() UserEventPayload128Project {
 	if o == nil {
-		return UserEventPayload127Project{}
+		return UserEventPayload128Project{}
 	}
 	return o.Project
 }
 
-func (o *OneHundredAndTwentySeven) GetProjectMembership() *ProjectMembership {
+func (o *OneHundredAndTwentyEight) GetProjectMembership() *ProjectMembership {
 	if o == nil {
 		return nil
 	}
 	return o.ProjectMembership
 }
 
-// OneHundredAndTwentySix - The payload of the event, if requested.
-type OneHundredAndTwentySix struct {
+// OneHundredAndTwentySeven - The payload of the event, if requested.
+type OneHundredAndTwentySeven struct {
 	PreviousProjectName string  `json:"previousProjectName"`
 	NewProjectName      string  `json:"newProjectName"`
 	OriginAccountName   string  `json:"originAccountName"`
 	TransferID          *string `json:"transferId,omitempty"`
+}
+
+func (o *OneHundredAndTwentySeven) GetPreviousProjectName() string {
+	if o == nil {
+		return ""
+	}
+	return o.PreviousProjectName
+}
+
+func (o *OneHundredAndTwentySeven) GetNewProjectName() string {
+	if o == nil {
+		return ""
+	}
+	return o.NewProjectName
+}
+
+func (o *OneHundredAndTwentySeven) GetOriginAccountName() string {
+	if o == nil {
+		return ""
+	}
+	return o.OriginAccountName
+}
+
+func (o *OneHundredAndTwentySeven) GetTransferID() *string {
+	if o == nil {
+		return nil
+	}
+	return o.TransferID
+}
+
+// OneHundredAndTwentySix - The payload of the event, if requested.
+type OneHundredAndTwentySix struct {
+	PreviousProjectName    string  `json:"previousProjectName"`
+	NewProjectName         string  `json:"newProjectName"`
+	DestinationAccountName string  `json:"destinationAccountName"`
+	TransferID             *string `json:"transferId,omitempty"`
 }
 
 func (o *OneHundredAndTwentySix) GetPreviousProjectName() string {
@@ -1908,11 +2325,11 @@ func (o *OneHundredAndTwentySix) GetNewProjectName() string {
 	return o.NewProjectName
 }
 
-func (o *OneHundredAndTwentySix) GetOriginAccountName() string {
+func (o *OneHundredAndTwentySix) GetDestinationAccountName() string {
 	if o == nil {
 		return ""
 	}
-	return o.OriginAccountName
+	return o.DestinationAccountName
 }
 
 func (o *OneHundredAndTwentySix) GetTransferID() *string {
@@ -1924,29 +2341,21 @@ func (o *OneHundredAndTwentySix) GetTransferID() *string {
 
 // OneHundredAndTwentyFive - The payload of the event, if requested.
 type OneHundredAndTwentyFive struct {
-	PreviousProjectName    string  `json:"previousProjectName"`
-	NewProjectName         string  `json:"newProjectName"`
-	DestinationAccountName string  `json:"destinationAccountName"`
+	ProjectName            string  `json:"projectName"`
+	DestinationAccountName *string `json:"destinationAccountName"`
 	TransferID             *string `json:"transferId,omitempty"`
 }
 
-func (o *OneHundredAndTwentyFive) GetPreviousProjectName() string {
+func (o *OneHundredAndTwentyFive) GetProjectName() string {
 	if o == nil {
 		return ""
 	}
-	return o.PreviousProjectName
+	return o.ProjectName
 }
 
-func (o *OneHundredAndTwentyFive) GetNewProjectName() string {
+func (o *OneHundredAndTwentyFive) GetDestinationAccountName() *string {
 	if o == nil {
-		return ""
-	}
-	return o.NewProjectName
-}
-
-func (o *OneHundredAndTwentyFive) GetDestinationAccountName() string {
-	if o == nil {
-		return ""
+		return nil
 	}
 	return o.DestinationAccountName
 }
@@ -1960,9 +2369,19 @@ func (o *OneHundredAndTwentyFive) GetTransferID() *string {
 
 // OneHundredAndTwentyFour - The payload of the event, if requested.
 type OneHundredAndTwentyFour struct {
+	ProjectID              string  `json:"projectId"`
 	ProjectName            string  `json:"projectName"`
-	DestinationAccountName *string `json:"destinationAccountName"`
+	OriginAccountName      string  `json:"originAccountName"`
+	DestinationAccountName string  `json:"destinationAccountName"`
+	DestinationAccountID   string  `json:"destinationAccountId"`
 	TransferID             *string `json:"transferId,omitempty"`
+}
+
+func (o *OneHundredAndTwentyFour) GetProjectID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ProjectID
 }
 
 func (o *OneHundredAndTwentyFour) GetProjectName() string {
@@ -1972,11 +2391,25 @@ func (o *OneHundredAndTwentyFour) GetProjectName() string {
 	return o.ProjectName
 }
 
-func (o *OneHundredAndTwentyFour) GetDestinationAccountName() *string {
+func (o *OneHundredAndTwentyFour) GetOriginAccountName() string {
 	if o == nil {
-		return nil
+		return ""
+	}
+	return o.OriginAccountName
+}
+
+func (o *OneHundredAndTwentyFour) GetDestinationAccountName() string {
+	if o == nil {
+		return ""
 	}
 	return o.DestinationAccountName
+}
+
+func (o *OneHundredAndTwentyFour) GetDestinationAccountID() string {
+	if o == nil {
+		return ""
+	}
+	return o.DestinationAccountID
 }
 
 func (o *OneHundredAndTwentyFour) GetTransferID() *string {
@@ -1988,58 +2421,6 @@ func (o *OneHundredAndTwentyFour) GetTransferID() *string {
 
 // OneHundredAndTwentyThree - The payload of the event, if requested.
 type OneHundredAndTwentyThree struct {
-	ProjectID              string  `json:"projectId"`
-	ProjectName            string  `json:"projectName"`
-	OriginAccountName      string  `json:"originAccountName"`
-	DestinationAccountName string  `json:"destinationAccountName"`
-	DestinationAccountID   string  `json:"destinationAccountId"`
-	TransferID             *string `json:"transferId,omitempty"`
-}
-
-func (o *OneHundredAndTwentyThree) GetProjectID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ProjectID
-}
-
-func (o *OneHundredAndTwentyThree) GetProjectName() string {
-	if o == nil {
-		return ""
-	}
-	return o.ProjectName
-}
-
-func (o *OneHundredAndTwentyThree) GetOriginAccountName() string {
-	if o == nil {
-		return ""
-	}
-	return o.OriginAccountName
-}
-
-func (o *OneHundredAndTwentyThree) GetDestinationAccountName() string {
-	if o == nil {
-		return ""
-	}
-	return o.DestinationAccountName
-}
-
-func (o *OneHundredAndTwentyThree) GetDestinationAccountID() string {
-	if o == nil {
-		return ""
-	}
-	return o.DestinationAccountID
-}
-
-func (o *OneHundredAndTwentyThree) GetTransferID() *string {
-	if o == nil {
-		return nil
-	}
-	return o.TransferID
-}
-
-// OneHundredAndTwentyTwo - The payload of the event, if requested.
-type OneHundredAndTwentyTwo struct {
 	RequestedTeamName string  `json:"requestedTeamName"`
 	RequestedUserName *string `json:"requestedUserName,omitempty"`
 	GitUsername       *string `json:"gitUsername,omitempty"`
@@ -2048,18 +2429,70 @@ type OneHundredAndTwentyTwo struct {
 	BitbucketUsername *string `json:"bitbucketUsername,omitempty"`
 }
 
-func (o *OneHundredAndTwentyTwo) GetRequestedTeamName() string {
+func (o *OneHundredAndTwentyThree) GetRequestedTeamName() string {
 	if o == nil {
 		return ""
 	}
 	return o.RequestedTeamName
 }
 
-func (o *OneHundredAndTwentyTwo) GetRequestedUserName() *string {
+func (o *OneHundredAndTwentyThree) GetRequestedUserName() *string {
 	if o == nil {
 		return nil
 	}
 	return o.RequestedUserName
+}
+
+func (o *OneHundredAndTwentyThree) GetGitUsername() *string {
+	if o == nil {
+		return nil
+	}
+	return o.GitUsername
+}
+
+func (o *OneHundredAndTwentyThree) GetGithubUsername() *string {
+	if o == nil {
+		return nil
+	}
+	return o.GithubUsername
+}
+
+func (o *OneHundredAndTwentyThree) GetGitlabUsername() *string {
+	if o == nil {
+		return nil
+	}
+	return o.GitlabUsername
+}
+
+func (o *OneHundredAndTwentyThree) GetBitbucketUsername() *string {
+	if o == nil {
+		return nil
+	}
+	return o.BitbucketUsername
+}
+
+// OneHundredAndTwentyTwo - The payload of the event, if requested.
+type OneHundredAndTwentyTwo struct {
+	TeamName          string  `json:"teamName"`
+	Username          *string `json:"username,omitempty"`
+	GitUsername       *string `json:"gitUsername,omitempty"`
+	GithubUsername    *string `json:"githubUsername,omitempty"`
+	GitlabUsername    *string `json:"gitlabUsername,omitempty"`
+	BitbucketUsername *string `json:"bitbucketUsername,omitempty"`
+}
+
+func (o *OneHundredAndTwentyTwo) GetTeamName() string {
+	if o == nil {
+		return ""
+	}
+	return o.TeamName
+}
+
+func (o *OneHundredAndTwentyTwo) GetUsername() *string {
+	if o == nil {
+		return nil
+	}
+	return o.Username
 }
 
 func (o *OneHundredAndTwentyTwo) GetGitUsername() *string {
@@ -2098,6 +2531,8 @@ type OneHundredAndTwentyOne struct {
 	GithubUsername    *string `json:"githubUsername,omitempty"`
 	GitlabUsername    *string `json:"gitlabUsername,omitempty"`
 	BitbucketUsername *string `json:"bitbucketUsername,omitempty"`
+	UpdatedUID        *string `json:"updatedUid,omitempty"`
+	TeamID            *string `json:"teamId,omitempty"`
 }
 
 func (o *OneHundredAndTwentyOne) GetTeamName() string {
@@ -2142,200 +2577,146 @@ func (o *OneHundredAndTwentyOne) GetBitbucketUsername() *string {
 	return o.BitbucketUsername
 }
 
-// OneHundredAndTwenty - The payload of the event, if requested.
-type OneHundredAndTwenty struct {
-	TeamName          string  `json:"teamName"`
-	Username          *string `json:"username,omitempty"`
-	GitUsername       *string `json:"gitUsername,omitempty"`
-	GithubUsername    *string `json:"githubUsername,omitempty"`
-	GitlabUsername    *string `json:"gitlabUsername,omitempty"`
-	BitbucketUsername *string `json:"bitbucketUsername,omitempty"`
-	UpdatedUID        *string `json:"updatedUid,omitempty"`
-	TeamID            *string `json:"teamId,omitempty"`
-}
-
-func (o *OneHundredAndTwenty) GetTeamName() string {
-	if o == nil {
-		return ""
-	}
-	return o.TeamName
-}
-
-func (o *OneHundredAndTwenty) GetUsername() *string {
-	if o == nil {
-		return nil
-	}
-	return o.Username
-}
-
-func (o *OneHundredAndTwenty) GetGitUsername() *string {
-	if o == nil {
-		return nil
-	}
-	return o.GitUsername
-}
-
-func (o *OneHundredAndTwenty) GetGithubUsername() *string {
-	if o == nil {
-		return nil
-	}
-	return o.GithubUsername
-}
-
-func (o *OneHundredAndTwenty) GetGitlabUsername() *string {
-	if o == nil {
-		return nil
-	}
-	return o.GitlabUsername
-}
-
-func (o *OneHundredAndTwenty) GetBitbucketUsername() *string {
-	if o == nil {
-		return nil
-	}
-	return o.BitbucketUsername
-}
-
-func (o *OneHundredAndTwenty) GetUpdatedUID() *string {
+func (o *OneHundredAndTwentyOne) GetUpdatedUID() *string {
 	if o == nil {
 		return nil
 	}
 	return o.UpdatedUID
 }
 
-func (o *OneHundredAndTwenty) GetTeamID() *string {
+func (o *OneHundredAndTwentyOne) GetTeamID() *string {
 	if o == nil {
 		return nil
 	}
 	return o.TeamID
 }
 
-// OneHundredAndNineteen - The payload of the event, if requested.
-type OneHundredAndNineteen struct {
+// OneHundredAndTwenty - The payload of the event, if requested.
+type OneHundredAndTwenty struct {
 	Price    *float64 `json:"price,omitempty"`
 	Currency *string  `json:"currency,omitempty"`
 }
 
-func (o *OneHundredAndNineteen) GetPrice() *float64 {
+func (o *OneHundredAndTwenty) GetPrice() *float64 {
 	if o == nil {
 		return nil
 	}
 	return o.Price
 }
 
-func (o *OneHundredAndNineteen) GetCurrency() *string {
+func (o *OneHundredAndTwenty) GetCurrency() *string {
 	if o == nil {
 		return nil
 	}
 	return o.Currency
 }
 
-// OneHundredAndEighteen - The payload of the event, if requested.
-type OneHundredAndEighteen struct {
+// OneHundredAndNineteen - The payload of the event, if requested.
+type OneHundredAndNineteen struct {
 	PreviewDeploymentSuffix         *string `json:"previewDeploymentSuffix,omitempty"`
 	PreviousPreviewDeploymentSuffix *string `json:"previousPreviewDeploymentSuffix,omitempty"`
 }
 
-func (o *OneHundredAndEighteen) GetPreviewDeploymentSuffix() *string {
+func (o *OneHundredAndNineteen) GetPreviewDeploymentSuffix() *string {
 	if o == nil {
 		return nil
 	}
 	return o.PreviewDeploymentSuffix
 }
 
-func (o *OneHundredAndEighteen) GetPreviousPreviewDeploymentSuffix() *string {
+func (o *OneHundredAndNineteen) GetPreviousPreviewDeploymentSuffix() *string {
 	if o == nil {
 		return nil
 	}
 	return o.PreviousPreviewDeploymentSuffix
 }
 
-// OneHundredAndSeventeen - The payload of the event, if requested.
-type OneHundredAndSeventeen struct {
+// OneHundredAndEighteen - The payload of the event, if requested.
+type OneHundredAndEighteen struct {
 	Price    *float64 `json:"price,omitempty"`
 	Currency *string  `json:"currency,omitempty"`
 	Enabled  *bool    `json:"enabled,omitempty"`
 }
 
-func (o *OneHundredAndSeventeen) GetPrice() *float64 {
+func (o *OneHundredAndEighteen) GetPrice() *float64 {
 	if o == nil {
 		return nil
 	}
 	return o.Price
 }
 
-func (o *OneHundredAndSeventeen) GetCurrency() *string {
+func (o *OneHundredAndEighteen) GetCurrency() *string {
 	if o == nil {
 		return nil
 	}
 	return o.Currency
 }
 
-func (o *OneHundredAndSeventeen) GetEnabled() *bool {
+func (o *OneHundredAndEighteen) GetEnabled() *bool {
 	if o == nil {
 		return nil
 	}
 	return o.Enabled
 }
 
-// OneHundredAndSixteen - The payload of the event, if requested.
-type OneHundredAndSixteen struct {
+// OneHundredAndSeventeen - The payload of the event, if requested.
+type OneHundredAndSeventeen struct {
 	Username string `json:"username"`
 }
 
-func (o *OneHundredAndSixteen) GetUsername() string {
+func (o *OneHundredAndSeventeen) GetUsername() string {
 	if o == nil {
 		return ""
 	}
 	return o.Username
 }
 
-// OneHundredAndFifteen - The payload of the event, if requested.
-type OneHundredAndFifteen struct {
+// OneHundredAndSixteen - The payload of the event, if requested.
+type OneHundredAndSixteen struct {
 	Email     string `json:"email"`
 	PrevEmail string `json:"prevEmail"`
 }
 
-func (o *OneHundredAndFifteen) GetEmail() string {
+func (o *OneHundredAndSixteen) GetEmail() string {
 	if o == nil {
 		return ""
 	}
 	return o.Email
 }
 
-func (o *OneHundredAndFifteen) GetPrevEmail() string {
+func (o *OneHundredAndSixteen) GetPrevEmail() string {
 	if o == nil {
 		return ""
 	}
 	return o.PrevEmail
 }
 
-// OneHundredAndFourteen - The payload of the event, if requested.
-type OneHundredAndFourteen struct {
+// OneHundredAndFifteen - The payload of the event, if requested.
+type OneHundredAndFifteen struct {
 	MfaEnabled bool `json:"mfaEnabled"`
 }
 
-func (o *OneHundredAndFourteen) GetMfaEnabled() bool {
+func (o *OneHundredAndFifteen) GetMfaEnabled() bool {
 	if o == nil {
 		return false
 	}
 	return o.MfaEnabled
 }
 
-// OneHundredAndThirteen - The payload of the event, if requested.
-type OneHundredAndThirteen struct {
+// OneHundredAndFourteen - The payload of the event, if requested.
+type OneHundredAndFourteen struct {
 	Enabled      bool `json:"enabled"`
 	TotpVerified bool `json:"totpVerified"`
 }
 
-func (o *OneHundredAndThirteen) GetEnabled() bool {
+func (o *OneHundredAndFourteen) GetEnabled() bool {
 	if o == nil {
 		return false
 	}
 	return o.Enabled
 }
 
-func (o *OneHundredAndThirteen) GetTotpVerified() bool {
+func (o *OneHundredAndFourteen) GetTotpVerified() bool {
 	if o == nil {
 		return false
 	}
@@ -2380,20 +2761,20 @@ func (o *Next) GetTotpVerified() bool {
 	return o.TotpVerified
 }
 
-// OneHundredAndTwelve - The payload of the event, if requested.
-type OneHundredAndTwelve struct {
+// OneHundredAndThirteen - The payload of the event, if requested.
+type OneHundredAndThirteen struct {
 	Previous Previous `json:"previous"`
 	Next     Next     `json:"next"`
 }
 
-func (o *OneHundredAndTwelve) GetPrevious() Previous {
+func (o *OneHundredAndThirteen) GetPrevious() Previous {
 	if o == nil {
 		return Previous{}
 	}
 	return o.Previous
 }
 
-func (o *OneHundredAndTwelve) GetNext() Next {
+func (o *OneHundredAndThirteen) GetNext() Next {
 	if o == nil {
 		return Next{}
 	}
@@ -2412,41 +2793,53 @@ func (o *PayloadRemoteCaching) GetEnabled() *bool {
 	return o.Enabled
 }
 
-// OneHundredAndEleven - The payload of the event, if requested.
-type OneHundredAndEleven struct {
+// OneHundredAndTwelve - The payload of the event, if requested.
+type OneHundredAndTwelve struct {
 	// Represents configuration for remote caching
 	RemoteCaching *PayloadRemoteCaching `json:"remoteCaching,omitempty"`
 }
 
-func (o *OneHundredAndEleven) GetRemoteCaching() *PayloadRemoteCaching {
+func (o *OneHundredAndTwelve) GetRemoteCaching() *PayloadRemoteCaching {
 	if o == nil {
 		return nil
 	}
 	return o.RemoteCaching
 }
 
-// OneHundredAndTen - The payload of the event, if requested.
-type OneHundredAndTen struct {
+// OneHundredAndEleven - The payload of the event, if requested.
+type OneHundredAndEleven struct {
 	Slug *string `json:"slug,omitempty"`
 }
 
-func (o *OneHundredAndTen) GetSlug() *string {
+func (o *OneHundredAndEleven) GetSlug() *string {
 	if o == nil {
 		return nil
 	}
 	return o.Slug
 }
 
-// OneHundredAndNine - The payload of the event, if requested.
-type OneHundredAndNine struct {
+// OneHundredAndTen - The payload of the event, if requested.
+type OneHundredAndTen struct {
 	Name *string `json:"name,omitempty"`
 }
 
-func (o *OneHundredAndNine) GetName() *string {
+func (o *OneHundredAndTen) GetName() *string {
 	if o == nil {
 		return nil
 	}
 	return o.Name
+}
+
+// OneHundredAndNine - The payload of the event, if requested.
+type OneHundredAndNine struct {
+	Enforced bool `json:"enforced"`
+}
+
+func (o *OneHundredAndNine) GetEnforced() bool {
+	if o == nil {
+		return false
+	}
+	return o.Enforced
 }
 
 type UserEventPayload108User struct {
@@ -2923,11 +3316,11 @@ func (o *NinetyNine) GetStoreType() StoreType {
 type UserEventPayloadType string
 
 const (
-	UserEventPayloadTypeIntegration UserEventPayloadType = "integration"
-	UserEventPayloadTypeEdgeConfig  UserEventPayloadType = "edge-config"
 	UserEventPayloadTypeRedis       UserEventPayloadType = "redis"
 	UserEventPayloadTypePostgres    UserEventPayloadType = "postgres"
+	UserEventPayloadTypeEdgeConfig  UserEventPayloadType = "edge-config"
 	UserEventPayloadTypeBlob        UserEventPayloadType = "blob"
+	UserEventPayloadTypeIntegration UserEventPayloadType = "integration"
 )
 
 func (e UserEventPayloadType) ToPointer() *UserEventPayloadType {
@@ -2939,15 +3332,15 @@ func (e *UserEventPayloadType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "integration":
-		fallthrough
-	case "edge-config":
-		fallthrough
 	case "redis":
 		fallthrough
 	case "postgres":
 		fallthrough
+	case "edge-config":
+		fallthrough
 	case "blob":
+		fallthrough
+	case "integration":
 		*e = UserEventPayloadType(v)
 		return nil
 	default:
@@ -3819,10 +4212,284 @@ func (o *UserEventPayload83Team) GetName() string {
 	return o.Name
 }
 
+type EnvID2 string
+
+const (
+	EnvID2Preview    EnvID2 = "preview"
+	EnvID2Production EnvID2 = "production"
+)
+
+func (e EnvID2) ToPointer() *EnvID2 {
+	return &e
+}
+func (e *EnvID2) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "preview":
+		fallthrough
+	case "production":
+		*e = EnvID2(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for EnvID2: %v", v)
+	}
+}
+
+type EnvIDType string
+
+const (
+	EnvIDTypeStr    EnvIDType = "str"
+	EnvIDTypeEnvID2 EnvIDType = "envId_2"
+)
+
+type EnvID struct {
+	Str    *string
+	EnvID2 *EnvID2
+
+	Type EnvIDType
+}
+
+func CreateEnvIDStr(str string) EnvID {
+	typ := EnvIDTypeStr
+
+	return EnvID{
+		Str:  &str,
+		Type: typ,
+	}
+}
+
+func CreateEnvIDEnvID2(envID2 EnvID2) EnvID {
+	typ := EnvIDTypeEnvID2
+
+	return EnvID{
+		EnvID2: &envID2,
+		Type:   typ,
+	}
+}
+
+func (u *EnvID) UnmarshalJSON(data []byte) error {
+
+	var str string = ""
+	if err := utils.UnmarshalJSON(data, &str, "", true, true); err == nil {
+		u.Str = &str
+		u.Type = EnvIDTypeStr
+		return nil
+	}
+
+	var envID2 EnvID2 = EnvID2("")
+	if err := utils.UnmarshalJSON(data, &envID2, "", true, true); err == nil {
+		u.EnvID2 = &envID2
+		u.Type = EnvIDTypeEnvID2
+		return nil
+	}
+
+	return fmt.Errorf("could not unmarshal `%s` into any supported union types for EnvID", string(data))
+}
+
+func (u EnvID) MarshalJSON() ([]byte, error) {
+	if u.Str != nil {
+		return utils.MarshalJSON(u.Str, "", true)
+	}
+
+	if u.EnvID2 != nil {
+		return utils.MarshalJSON(u.EnvID2, "", true)
+	}
+
+	return nil, errors.New("could not marshal union type EnvID: all fields are null")
+}
+
 type OldConnectConfigurations struct {
+	EnvID                  EnvID   `json:"envId"`
+	ConnectConfigurationID string  `json:"connectConfigurationId"`
+	Passive                bool    `json:"passive"`
+	BuildsEnabled          bool    `json:"buildsEnabled"`
+	CreatedAt              float64 `json:"createdAt"`
+	UpdatedAt              float64 `json:"updatedAt"`
+}
+
+func (o *OldConnectConfigurations) GetEnvID() EnvID {
+	if o == nil {
+		return EnvID{}
+	}
+	return o.EnvID
+}
+
+func (o *OldConnectConfigurations) GetConnectConfigurationID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ConnectConfigurationID
+}
+
+func (o *OldConnectConfigurations) GetPassive() bool {
+	if o == nil {
+		return false
+	}
+	return o.Passive
+}
+
+func (o *OldConnectConfigurations) GetBuildsEnabled() bool {
+	if o == nil {
+		return false
+	}
+	return o.BuildsEnabled
+}
+
+func (o *OldConnectConfigurations) GetCreatedAt() float64 {
+	if o == nil {
+		return 0.0
+	}
+	return o.CreatedAt
+}
+
+func (o *OldConnectConfigurations) GetUpdatedAt() float64 {
+	if o == nil {
+		return 0.0
+	}
+	return o.UpdatedAt
+}
+
+type UserEventEnvID2 string
+
+const (
+	UserEventEnvID2Preview    UserEventEnvID2 = "preview"
+	UserEventEnvID2Production UserEventEnvID2 = "production"
+)
+
+func (e UserEventEnvID2) ToPointer() *UserEventEnvID2 {
+	return &e
+}
+func (e *UserEventEnvID2) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "preview":
+		fallthrough
+	case "production":
+		*e = UserEventEnvID2(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for UserEventEnvID2: %v", v)
+	}
+}
+
+type PayloadEnvIDType string
+
+const (
+	PayloadEnvIDTypeStr             PayloadEnvIDType = "str"
+	PayloadEnvIDTypeUserEventEnvID2 PayloadEnvIDType = "UserEvent_envId_2"
+)
+
+type PayloadEnvID struct {
+	Str             *string
+	UserEventEnvID2 *UserEventEnvID2
+
+	Type PayloadEnvIDType
+}
+
+func CreatePayloadEnvIDStr(str string) PayloadEnvID {
+	typ := PayloadEnvIDTypeStr
+
+	return PayloadEnvID{
+		Str:  &str,
+		Type: typ,
+	}
+}
+
+func CreatePayloadEnvIDUserEventEnvID2(userEventEnvID2 UserEventEnvID2) PayloadEnvID {
+	typ := PayloadEnvIDTypeUserEventEnvID2
+
+	return PayloadEnvID{
+		UserEventEnvID2: &userEventEnvID2,
+		Type:            typ,
+	}
+}
+
+func (u *PayloadEnvID) UnmarshalJSON(data []byte) error {
+
+	var str string = ""
+	if err := utils.UnmarshalJSON(data, &str, "", true, true); err == nil {
+		u.Str = &str
+		u.Type = PayloadEnvIDTypeStr
+		return nil
+	}
+
+	var userEventEnvID2 UserEventEnvID2 = UserEventEnvID2("")
+	if err := utils.UnmarshalJSON(data, &userEventEnvID2, "", true, true); err == nil {
+		u.UserEventEnvID2 = &userEventEnvID2
+		u.Type = PayloadEnvIDTypeUserEventEnvID2
+		return nil
+	}
+
+	return fmt.Errorf("could not unmarshal `%s` into any supported union types for PayloadEnvID", string(data))
+}
+
+func (u PayloadEnvID) MarshalJSON() ([]byte, error) {
+	if u.Str != nil {
+		return utils.MarshalJSON(u.Str, "", true)
+	}
+
+	if u.UserEventEnvID2 != nil {
+		return utils.MarshalJSON(u.UserEventEnvID2, "", true)
+	}
+
+	return nil, errors.New("could not marshal union type PayloadEnvID: all fields are null")
 }
 
 type NewConnectConfigurations struct {
+	EnvID                  PayloadEnvID `json:"envId"`
+	ConnectConfigurationID string       `json:"connectConfigurationId"`
+	Passive                bool         `json:"passive"`
+	BuildsEnabled          bool         `json:"buildsEnabled"`
+	CreatedAt              float64      `json:"createdAt"`
+	UpdatedAt              float64      `json:"updatedAt"`
+}
+
+func (o *NewConnectConfigurations) GetEnvID() PayloadEnvID {
+	if o == nil {
+		return PayloadEnvID{}
+	}
+	return o.EnvID
+}
+
+func (o *NewConnectConfigurations) GetConnectConfigurationID() string {
+	if o == nil {
+		return ""
+	}
+	return o.ConnectConfigurationID
+}
+
+func (o *NewConnectConfigurations) GetPassive() bool {
+	if o == nil {
+		return false
+	}
+	return o.Passive
+}
+
+func (o *NewConnectConfigurations) GetBuildsEnabled() bool {
+	if o == nil {
+		return false
+	}
+	return o.BuildsEnabled
+}
+
+func (o *NewConnectConfigurations) GetCreatedAt() float64 {
+	if o == nil {
+		return 0.0
+	}
+	return o.CreatedAt
+}
+
+func (o *NewConnectConfigurations) GetUpdatedAt() float64 {
+	if o == nil {
+		return 0.0
+	}
+	return o.UpdatedAt
 }
 
 type UserEventPayload83Project struct {
@@ -4969,11 +5636,11 @@ type PayloadOrigin string
 const (
 	PayloadOriginTeams             PayloadOrigin = "teams"
 	PayloadOriginSaml              PayloadOrigin = "saml"
-	PayloadOriginLink              PayloadOrigin = "link"
 	PayloadOriginGithub            PayloadOrigin = "github"
 	PayloadOriginGitlab            PayloadOrigin = "gitlab"
 	PayloadOriginBitbucket         PayloadOrigin = "bitbucket"
 	PayloadOriginMail              PayloadOrigin = "mail"
+	PayloadOriginLink              PayloadOrigin = "link"
 	PayloadOriginImport            PayloadOrigin = "import"
 	PayloadOriginDsync             PayloadOrigin = "dsync"
 	PayloadOriginFeedback          PayloadOrigin = "feedback"
@@ -4993,8 +5660,6 @@ func (e *PayloadOrigin) UnmarshalJSON(data []byte) error {
 		fallthrough
 	case "saml":
 		fallthrough
-	case "link":
-		fallthrough
 	case "github":
 		fallthrough
 	case "gitlab":
@@ -5002,6 +5667,8 @@ func (e *PayloadOrigin) UnmarshalJSON(data []byte) error {
 	case "bitbucket":
 		fallthrough
 	case "mail":
+		fallthrough
+	case "link":
 		fallthrough
 	case "import":
 		fallthrough
@@ -5619,6 +6286,7 @@ type SixtyEight struct {
 	ViaGithub    bool         `json:"viaGithub"`
 	ViaGitlab    bool         `json:"viaGitlab"`
 	ViaBitbucket bool         `json:"viaBitbucket"`
+	ViaGoogle    bool         `json:"viaGoogle"`
 	ViaSamlSso   bool         `json:"viaSamlSso"`
 	ViaPasskey   bool         `json:"viaPasskey"`
 	SsoType      *string      `json:"ssoType,omitempty"`
@@ -5660,6 +6328,13 @@ func (o *SixtyEight) GetViaBitbucket() bool {
 		return false
 	}
 	return o.ViaBitbucket
+}
+
+func (o *SixtyEight) GetViaGoogle() bool {
+	if o == nil {
+		return false
+	}
+	return o.ViaGoogle
 }
 
 func (o *SixtyEight) GetViaSamlSso() bool {
@@ -6242,6 +6917,7 @@ type UserEventCredentialsType string
 
 const (
 	UserEventCredentialsTypeGithubOauthCustomHost UserEventCredentialsType = "github-oauth-custom-host"
+	UserEventCredentialsTypeGithubAppCustomHost   UserEventCredentialsType = "github-app-custom-host"
 )
 
 func (e UserEventCredentialsType) ToPointer() *UserEventCredentialsType {
@@ -6254,6 +6930,8 @@ func (e *UserEventCredentialsType) UnmarshalJSON(data []byte) error {
 	}
 	switch v {
 	case "github-oauth-custom-host":
+		fallthrough
+	case "github-app-custom-host":
 		*e = UserEventCredentialsType(v)
 		return nil
 	default:
@@ -6293,6 +6971,7 @@ type CredentialsType string
 const (
 	CredentialsTypeGitlab      CredentialsType = "gitlab"
 	CredentialsTypeBitbucket   CredentialsType = "bitbucket"
+	CredentialsTypeGoogle      CredentialsType = "google"
 	CredentialsTypeGithubOauth CredentialsType = "github-oauth"
 	CredentialsTypeGithubApp   CredentialsType = "github-app"
 )
@@ -6309,6 +6988,8 @@ func (e *CredentialsType) UnmarshalJSON(data []byte) error {
 	case "gitlab":
 		fallthrough
 	case "bitbucket":
+		fallthrough
+	case "google":
 		fallthrough
 	case "github-oauth":
 		fallthrough
@@ -6451,137 +7132,23 @@ func (o *PayloadDismissedToasts) GetDismissals() []PayloadDismissals {
 	return o.Dismissals
 }
 
-type UserEventFavoriteProjectsAndSpaces2 struct {
-	SpaceID   string  `json:"spaceId"`
-	ScopeSlug string  `json:"scopeSlug"`
-	ScopeID   string  `json:"scopeId"`
-	TeamID    *string `json:"teamId,omitempty"`
+type PayloadFavoriteProjectsAndSpaces struct {
+	TeamID    string `json:"teamId"`
+	ProjectID string `json:"projectId"`
 }
 
-func (o *UserEventFavoriteProjectsAndSpaces2) GetSpaceID() string {
+func (o *PayloadFavoriteProjectsAndSpaces) GetTeamID() string {
 	if o == nil {
 		return ""
-	}
-	return o.SpaceID
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces2) GetScopeSlug() string {
-	if o == nil {
-		return ""
-	}
-	return o.ScopeSlug
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces2) GetScopeID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ScopeID
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces2) GetTeamID() *string {
-	if o == nil {
-		return nil
 	}
 	return o.TeamID
 }
 
-type UserEventFavoriteProjectsAndSpaces1 struct {
-	ProjectID string  `json:"projectId"`
-	ScopeSlug string  `json:"scopeSlug"`
-	ScopeID   string  `json:"scopeId"`
-	TeamID    *string `json:"teamId,omitempty"`
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces1) GetProjectID() string {
+func (o *PayloadFavoriteProjectsAndSpaces) GetProjectID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ProjectID
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces1) GetScopeSlug() string {
-	if o == nil {
-		return ""
-	}
-	return o.ScopeSlug
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces1) GetScopeID() string {
-	if o == nil {
-		return ""
-	}
-	return o.ScopeID
-}
-
-func (o *UserEventFavoriteProjectsAndSpaces1) GetTeamID() *string {
-	if o == nil {
-		return nil
-	}
-	return o.TeamID
-}
-
-type PayloadFavoriteProjectsAndSpacesType string
-
-const (
-	PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces1 PayloadFavoriteProjectsAndSpacesType = "UserEvent_favoriteProjectsAndSpaces_1"
-	PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces2 PayloadFavoriteProjectsAndSpacesType = "UserEvent_favoriteProjectsAndSpaces_2"
-)
-
-type PayloadFavoriteProjectsAndSpaces struct {
-	UserEventFavoriteProjectsAndSpaces1 *UserEventFavoriteProjectsAndSpaces1
-	UserEventFavoriteProjectsAndSpaces2 *UserEventFavoriteProjectsAndSpaces2
-
-	Type PayloadFavoriteProjectsAndSpacesType
-}
-
-func CreatePayloadFavoriteProjectsAndSpacesUserEventFavoriteProjectsAndSpaces1(userEventFavoriteProjectsAndSpaces1 UserEventFavoriteProjectsAndSpaces1) PayloadFavoriteProjectsAndSpaces {
-	typ := PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces1
-
-	return PayloadFavoriteProjectsAndSpaces{
-		UserEventFavoriteProjectsAndSpaces1: &userEventFavoriteProjectsAndSpaces1,
-		Type:                                typ,
-	}
-}
-
-func CreatePayloadFavoriteProjectsAndSpacesUserEventFavoriteProjectsAndSpaces2(userEventFavoriteProjectsAndSpaces2 UserEventFavoriteProjectsAndSpaces2) PayloadFavoriteProjectsAndSpaces {
-	typ := PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces2
-
-	return PayloadFavoriteProjectsAndSpaces{
-		UserEventFavoriteProjectsAndSpaces2: &userEventFavoriteProjectsAndSpaces2,
-		Type:                                typ,
-	}
-}
-
-func (u *PayloadFavoriteProjectsAndSpaces) UnmarshalJSON(data []byte) error {
-
-	var userEventFavoriteProjectsAndSpaces1 UserEventFavoriteProjectsAndSpaces1 = UserEventFavoriteProjectsAndSpaces1{}
-	if err := utils.UnmarshalJSON(data, &userEventFavoriteProjectsAndSpaces1, "", true, true); err == nil {
-		u.UserEventFavoriteProjectsAndSpaces1 = &userEventFavoriteProjectsAndSpaces1
-		u.Type = PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces1
-		return nil
-	}
-
-	var userEventFavoriteProjectsAndSpaces2 UserEventFavoriteProjectsAndSpaces2 = UserEventFavoriteProjectsAndSpaces2{}
-	if err := utils.UnmarshalJSON(data, &userEventFavoriteProjectsAndSpaces2, "", true, true); err == nil {
-		u.UserEventFavoriteProjectsAndSpaces2 = &userEventFavoriteProjectsAndSpaces2
-		u.Type = PayloadFavoriteProjectsAndSpacesTypeUserEventFavoriteProjectsAndSpaces2
-		return nil
-	}
-
-	return fmt.Errorf("could not unmarshal `%s` into any supported union types for PayloadFavoriteProjectsAndSpaces", string(data))
-}
-
-func (u PayloadFavoriteProjectsAndSpaces) MarshalJSON() ([]byte, error) {
-	if u.UserEventFavoriteProjectsAndSpaces1 != nil {
-		return utils.MarshalJSON(u.UserEventFavoriteProjectsAndSpaces1, "", true)
-	}
-
-	if u.UserEventFavoriteProjectsAndSpaces2 != nil {
-		return utils.MarshalJSON(u.UserEventFavoriteProjectsAndSpaces2, "", true)
-	}
-
-	return nil, errors.New("could not marshal union type PayloadFavoriteProjectsAndSpaces: all fields are null")
 }
 
 type PayloadImportFlowGitNamespaceType string
@@ -6713,9 +7280,10 @@ func (u PayloadImportFlowGitNamespaceID) MarshalJSON() ([]byte, error) {
 type PayloadImportFlowGitProvider string
 
 const (
-	PayloadImportFlowGitProviderGithub    PayloadImportFlowGitProvider = "github"
-	PayloadImportFlowGitProviderGitlab    PayloadImportFlowGitProvider = "gitlab"
-	PayloadImportFlowGitProviderBitbucket PayloadImportFlowGitProvider = "bitbucket"
+	PayloadImportFlowGitProviderGithub           PayloadImportFlowGitProvider = "github"
+	PayloadImportFlowGitProviderGitlab           PayloadImportFlowGitProvider = "gitlab"
+	PayloadImportFlowGitProviderBitbucket        PayloadImportFlowGitProvider = "bitbucket"
+	PayloadImportFlowGitProviderGithubCustomHost PayloadImportFlowGitProvider = "github-custom-host"
 )
 
 func (e PayloadImportFlowGitProvider) ToPointer() *PayloadImportFlowGitProvider {
@@ -6732,6 +7300,8 @@ func (e *PayloadImportFlowGitProvider) UnmarshalJSON(data []byte) error {
 	case "gitlab":
 		fallthrough
 	case "bitbucket":
+		fallthrough
+	case "github-custom-host":
 		*e = PayloadImportFlowGitProvider(v)
 		return nil
 	default:
@@ -6907,6 +7477,67 @@ func (o *PayloadBuildEntitlements) GetEnhancedBuilds() *bool {
 	return o.EnhancedBuilds
 }
 
+type PayloadPurchaseType string
+
+const (
+	PayloadPurchaseTypeEnhanced PayloadPurchaseType = "enhanced"
+	PayloadPurchaseTypeUltra    PayloadPurchaseType = "ultra"
+)
+
+func (e PayloadPurchaseType) ToPointer() *PayloadPurchaseType {
+	return &e
+}
+func (e *PayloadPurchaseType) UnmarshalJSON(data []byte) error {
+	var v string
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	switch v {
+	case "enhanced":
+		fallthrough
+	case "ultra":
+		*e = PayloadPurchaseType(v)
+		return nil
+	default:
+		return fmt.Errorf("invalid value for PayloadPurchaseType: %v", v)
+	}
+}
+
+type PayloadBuildMachine struct {
+	PurchaseType          *PayloadPurchaseType `json:"purchaseType,omitempty"`
+	IsDefaultBuildMachine *bool                `json:"isDefaultBuildMachine,omitempty"`
+	Cores                 *float64             `json:"cores,omitempty"`
+	Memory                *float64             `json:"memory,omitempty"`
+}
+
+func (o *PayloadBuildMachine) GetPurchaseType() *PayloadPurchaseType {
+	if o == nil {
+		return nil
+	}
+	return o.PurchaseType
+}
+
+func (o *PayloadBuildMachine) GetIsDefaultBuildMachine() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.IsDefaultBuildMachine
+}
+
+func (o *PayloadBuildMachine) GetCores() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.Cores
+}
+
+func (o *PayloadBuildMachine) GetMemory() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.Memory
+}
+
 type PayloadResourceConfig struct {
 	NodeType                                  *string                   `json:"nodeType,omitempty"`
 	ConcurrentBuilds                          *float64                  `json:"concurrentBuilds,omitempty"`
@@ -6929,6 +7560,10 @@ type PayloadResourceConfig struct {
 	CronJobsPerProject                        *float64                  `json:"cronJobsPerProject,omitempty"`
 	MicrofrontendGroupsPerTeam                *float64                  `json:"microfrontendGroupsPerTeam,omitempty"`
 	MicrofrontendProjectsPerGroup             *float64                  `json:"microfrontendProjectsPerGroup,omitempty"`
+	FlagsExplorerOverridesThreshold           *float64                  `json:"flagsExplorerOverridesThreshold,omitempty"`
+	FlagsExplorerUnlimitedOverrides           *bool                     `json:"flagsExplorerUnlimitedOverrides,omitempty"`
+	CustomEnvironmentsPerProject              *float64                  `json:"customEnvironmentsPerProject,omitempty"`
+	BuildMachine                              *PayloadBuildMachine      `json:"buildMachine,omitempty"`
 }
 
 func (o *PayloadResourceConfig) GetNodeType() *string {
@@ -7076,6 +7711,34 @@ func (o *PayloadResourceConfig) GetMicrofrontendProjectsPerGroup() *float64 {
 		return nil
 	}
 	return o.MicrofrontendProjectsPerGroup
+}
+
+func (o *PayloadResourceConfig) GetFlagsExplorerOverridesThreshold() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.FlagsExplorerOverridesThreshold
+}
+
+func (o *PayloadResourceConfig) GetFlagsExplorerUnlimitedOverrides() *bool {
+	if o == nil {
+		return nil
+	}
+	return o.FlagsExplorerUnlimitedOverrides
+}
+
+func (o *PayloadResourceConfig) GetCustomEnvironmentsPerProject() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.CustomEnvironmentsPerProject
+}
+
+func (o *PayloadResourceConfig) GetBuildMachine() *PayloadBuildMachine {
+	if o == nil {
+		return nil
+	}
+	return o.BuildMachine
 }
 
 type ResourceLimits struct {
@@ -7364,7 +8027,6 @@ func (e *PayloadReason) UnmarshalJSON(data []byte) error {
 type PayloadBlockedDueToOverageType string
 
 const (
-	PayloadBlockedDueToOverageTypeAiCredits                               PayloadBlockedDueToOverageType = "aiCredits"
 	PayloadBlockedDueToOverageTypeAnalyticsUsage                          PayloadBlockedDueToOverageType = "analyticsUsage"
 	PayloadBlockedDueToOverageTypeArtifacts                               PayloadBlockedDueToOverageType = "artifacts"
 	PayloadBlockedDueToOverageTypeBandwidth                               PayloadBlockedDueToOverageType = "bandwidth"
@@ -7418,8 +8080,6 @@ func (e *PayloadBlockedDueToOverageType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "aiCredits":
-		fallthrough
 	case "analyticsUsage":
 		fallthrough
 	case "artifacts":
@@ -7659,11 +8319,11 @@ type UserEventPayloadOrigin string
 const (
 	UserEventPayloadOriginTeams             UserEventPayloadOrigin = "teams"
 	UserEventPayloadOriginSaml              UserEventPayloadOrigin = "saml"
-	UserEventPayloadOriginLink              UserEventPayloadOrigin = "link"
 	UserEventPayloadOriginGithub            UserEventPayloadOrigin = "github"
 	UserEventPayloadOriginGitlab            UserEventPayloadOrigin = "gitlab"
 	UserEventPayloadOriginBitbucket         UserEventPayloadOrigin = "bitbucket"
 	UserEventPayloadOriginMail              UserEventPayloadOrigin = "mail"
+	UserEventPayloadOriginLink              UserEventPayloadOrigin = "link"
 	UserEventPayloadOriginImport            UserEventPayloadOrigin = "import"
 	UserEventPayloadOriginDsync             UserEventPayloadOrigin = "dsync"
 	UserEventPayloadOriginFeedback          UserEventPayloadOrigin = "feedback"
@@ -7683,8 +8343,6 @@ func (e *UserEventPayloadOrigin) UnmarshalJSON(data []byte) error {
 		fallthrough
 	case "saml":
 		fallthrough
-	case "link":
-		fallthrough
 	case "github":
 		fallthrough
 	case "gitlab":
@@ -7692,6 +8350,8 @@ func (e *UserEventPayloadOrigin) UnmarshalJSON(data []byte) error {
 	case "bitbucket":
 		fallthrough
 	case "mail":
+		fallthrough
+	case "link":
 		fallthrough
 	case "import":
 		fallthrough
@@ -7985,33 +8645,6 @@ func (o *UsageAlerts) GetBlockingAt() *float64 {
 		return nil
 	}
 	return o.BlockingAt
-}
-
-type AiCredits struct {
-	CurrentThreshold float64  `json:"currentThreshold"`
-	WarningAt        *float64 `json:"warningAt,omitempty"`
-	BlockedAt        *float64 `json:"blockedAt,omitempty"`
-}
-
-func (o *AiCredits) GetCurrentThreshold() float64 {
-	if o == nil {
-		return 0.0
-	}
-	return o.CurrentThreshold
-}
-
-func (o *AiCredits) GetWarningAt() *float64 {
-	if o == nil {
-		return nil
-	}
-	return o.WarningAt
-}
-
-func (o *AiCredits) GetBlockedAt() *float64 {
-	if o == nil {
-		return nil
-	}
-	return o.BlockedAt
 }
 
 type AnalyticsUsage struct {
@@ -9149,7 +9782,6 @@ func (o *WebAnalyticsEvent) GetBlockedAt() *float64 {
 }
 
 type OverageUsageAlerts struct {
-	AiCredits                               *AiCredits                               `json:"aiCredits,omitempty"`
 	AnalyticsUsage                          *AnalyticsUsage                          `json:"analyticsUsage,omitempty"`
 	Artifacts                               *Artifacts                               `json:"artifacts,omitempty"`
 	Bandwidth                               *Bandwidth                               `json:"bandwidth,omitempty"`
@@ -9192,13 +9824,6 @@ type OverageUsageAlerts struct {
 	WafOwaspRequests                        *WafOwaspRequests                        `json:"wafOwaspRequests,omitempty"`
 	WafRateLimitRequest                     *WafRateLimitRequest                     `json:"wafRateLimitRequest,omitempty"`
 	WebAnalyticsEvent                       *WebAnalyticsEvent                       `json:"webAnalyticsEvent,omitempty"`
-}
-
-func (o *OverageUsageAlerts) GetAiCredits() *AiCredits {
-	if o == nil {
-		return nil
-	}
-	return o.AiCredits
 }
 
 func (o *OverageUsageAlerts) GetAnalyticsUsage() *AnalyticsUsage {
@@ -9493,6 +10118,28 @@ func (o *OverageUsageAlerts) GetWebAnalyticsEvent() *WebAnalyticsEvent {
 		return nil
 	}
 	return o.WebAnalyticsEvent
+}
+
+// OverageMetadata - Contains the timestamps for usage summary emails.
+type OverageMetadata struct {
+	// Tracks if the first time on-demand overage email has been sent.
+	FirstTimeOnDemandNotificationSentAt *float64 `json:"firstTimeOnDemandNotificationSentAt,omitempty"`
+	// Tracks the last time we sent a summary email.
+	OverageSummaryEmailSentAt *float64 `json:"overageSummaryEmailSentAt,omitempty"`
+}
+
+func (o *OverageMetadata) GetFirstTimeOnDemandNotificationSentAt() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.FirstTimeOnDemandNotificationSentAt
+}
+
+func (o *OverageMetadata) GetOverageSummaryEmailSentAt() *float64 {
+	if o == nil {
+		return nil
+	}
+	return o.OverageSummaryEmailSentAt
 }
 
 // EnablePreviewFeedback - Whether the Vercel Toolbar is enabled for preview deployments.
@@ -10006,7 +10653,6 @@ func (e *UserEventPayload62NewOwnerFeatureBlocksBlobBlockReason) UnmarshalJSON(d
 type OverageReason string
 
 const (
-	OverageReasonAiCredits                               OverageReason = "aiCredits"
 	OverageReasonAnalyticsUsage                          OverageReason = "analyticsUsage"
 	OverageReasonArtifacts                               OverageReason = "artifacts"
 	OverageReasonBandwidth                               OverageReason = "bandwidth"
@@ -10060,8 +10706,6 @@ func (e *OverageReason) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "aiCredits":
-		fallthrough
 	case "analyticsUsage":
 		fallthrough
 	case "artifacts":
@@ -10224,7 +10868,6 @@ func (e *UserEventPayload62NewOwnerFeatureBlocksPostgresBlockReason) UnmarshalJS
 type PayloadOverageReason string
 
 const (
-	PayloadOverageReasonAiCredits                               PayloadOverageReason = "aiCredits"
 	PayloadOverageReasonAnalyticsUsage                          PayloadOverageReason = "analyticsUsage"
 	PayloadOverageReasonArtifacts                               PayloadOverageReason = "artifacts"
 	PayloadOverageReasonBandwidth                               PayloadOverageReason = "bandwidth"
@@ -10278,8 +10921,6 @@ func (e *PayloadOverageReason) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "aiCredits":
-		fallthrough
 	case "analyticsUsage":
 		fallthrough
 	case "artifacts":
@@ -10442,7 +11083,6 @@ func (e *UserEventPayload62NewOwnerFeatureBlocksRedisBlockReason) UnmarshalJSON(
 type UserEventPayloadOverageReason string
 
 const (
-	UserEventPayloadOverageReasonAiCredits                               UserEventPayloadOverageReason = "aiCredits"
 	UserEventPayloadOverageReasonAnalyticsUsage                          UserEventPayloadOverageReason = "analyticsUsage"
 	UserEventPayloadOverageReasonArtifacts                               UserEventPayloadOverageReason = "artifacts"
 	UserEventPayloadOverageReasonBandwidth                               UserEventPayloadOverageReason = "bandwidth"
@@ -10496,8 +11136,6 @@ func (e *UserEventPayloadOverageReason) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	switch v {
-	case "aiCredits":
-		fallthrough
 	case "analyticsUsage":
 		fallthrough
 	case "artifacts":
@@ -10924,8 +11562,10 @@ type NewOwner struct {
 	// Contains the timestamps when a user was notified about their usage
 	UsageAlerts        *UsageAlerts        `json:"usageAlerts,omitempty"`
 	OverageUsageAlerts *OverageUsageAlerts `json:"overageUsageAlerts,omitempty"`
-	Username           string              `json:"username"`
-	UpdatedAt          float64             `json:"updatedAt"`
+	// Contains the timestamps for usage summary emails.
+	OverageMetadata *OverageMetadata `json:"overageMetadata,omitempty"`
+	Username        string           `json:"username"`
+	UpdatedAt       float64          `json:"updatedAt"`
 	// Whether the Vercel Toolbar is enabled for preview deployments.
 	EnablePreviewFeedback *EnablePreviewFeedback `json:"enablePreviewFeedback,omitempty"`
 	// Information about which features are blocked for a user. Blocks can be either soft (the user can still access the feature, but with a warning, e.g. prompting an upgrade) or hard (the user cannot access the feature at all).
@@ -11374,6 +12014,13 @@ func (o *NewOwner) GetOverageUsageAlerts() *OverageUsageAlerts {
 	return o.OverageUsageAlerts
 }
 
+func (o *NewOwner) GetOverageMetadata() *OverageMetadata {
+	if o == nil {
+		return nil
+	}
+	return o.OverageMetadata
+}
+
 func (o *NewOwner) GetUsername() string {
 	if o == nil {
 		return ""
@@ -11657,13 +12304,13 @@ func (e *UserEventPayloadTarget) UnmarshalJSON(data []byte) error {
 
 type OldEnvVar struct {
 	// The date when the Shared Env Var was created.
-	Created time.Time `json:"created"`
+	Created *time.Time `json:"created,omitempty"`
 	// The name of the Shared Env Var.
-	Key string `json:"key"`
+	Key *string `json:"key,omitempty"`
 	// The unique identifier of the owner (team) the Shared Env Var was created for.
 	OwnerID *string `json:"ownerId,omitempty"`
 	// The unique identifier of the Shared Env Var.
-	ID string `json:"id"`
+	ID *string `json:"id,omitempty"`
 	// The unique identifier of the user who created the Shared Env Var.
 	CreatedBy *string `json:"createdBy,omitempty"`
 	// The unique identifier of the user who deleted the Shared Env Var.
@@ -11678,8 +12325,6 @@ type OldEnvVar struct {
 	UpdatedAt *float64 `json:"updatedAt,omitempty"`
 	// The value of the Shared Env Var.
 	Value *string `json:"value,omitempty"`
-	// The value of the shared environment variable decrypted against api-secrets-management.
-	VsmValue *string `json:"vsmValue,omitempty"`
 	// The unique identifiers of the projects which the Shared Env Var is linked to.
 	ProjectID []string `json:"projectId,omitempty"`
 	// The type of this cosmos doc instance, if blank, assume secret.
@@ -11689,7 +12334,7 @@ type OldEnvVar struct {
 	// whether or not this env varible applies to custom environments
 	ApplyToAllCustomEnvironments *bool `json:"applyToAllCustomEnvironments,omitempty"`
 	// whether or not this env variable is decrypted
-	Decrypted bool `json:"decrypted"`
+	Decrypted *bool `json:"decrypted,omitempty"`
 	// A user provided comment that describes what this Shared Env Var is for.
 	Comment *string `json:"comment,omitempty"`
 	// The last editor full name or username.
@@ -11707,16 +12352,16 @@ func (o *OldEnvVar) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (o *OldEnvVar) GetCreated() time.Time {
+func (o *OldEnvVar) GetCreated() *time.Time {
 	if o == nil {
-		return time.Time{}
+		return nil
 	}
 	return o.Created
 }
 
-func (o *OldEnvVar) GetKey() string {
+func (o *OldEnvVar) GetKey() *string {
 	if o == nil {
-		return ""
+		return nil
 	}
 	return o.Key
 }
@@ -11728,9 +12373,9 @@ func (o *OldEnvVar) GetOwnerID() *string {
 	return o.OwnerID
 }
 
-func (o *OldEnvVar) GetID() string {
+func (o *OldEnvVar) GetID() *string {
 	if o == nil {
-		return ""
+		return nil
 	}
 	return o.ID
 }
@@ -11784,13 +12429,6 @@ func (o *OldEnvVar) GetValue() *string {
 	return o.Value
 }
 
-func (o *OldEnvVar) GetVsmValue() *string {
-	if o == nil {
-		return nil
-	}
-	return o.VsmValue
-}
-
 func (o *OldEnvVar) GetProjectID() []string {
 	if o == nil {
 		return nil
@@ -11819,9 +12457,9 @@ func (o *OldEnvVar) GetApplyToAllCustomEnvironments() *bool {
 	return o.ApplyToAllCustomEnvironments
 }
 
-func (o *OldEnvVar) GetDecrypted() bool {
+func (o *OldEnvVar) GetDecrypted() *bool {
 	if o == nil {
-		return false
+		return nil
 	}
 	return o.Decrypted
 }
@@ -11905,13 +12543,13 @@ func (e *UserEventPayload58Target) UnmarshalJSON(data []byte) error {
 
 type NewEnvVar struct {
 	// The date when the Shared Env Var was created.
-	Created time.Time `json:"created"`
+	Created *time.Time `json:"created,omitempty"`
 	// The name of the Shared Env Var.
-	Key string `json:"key"`
+	Key *string `json:"key,omitempty"`
 	// The unique identifier of the owner (team) the Shared Env Var was created for.
 	OwnerID *string `json:"ownerId,omitempty"`
 	// The unique identifier of the Shared Env Var.
-	ID string `json:"id"`
+	ID *string `json:"id,omitempty"`
 	// The unique identifier of the user who created the Shared Env Var.
 	CreatedBy *string `json:"createdBy,omitempty"`
 	// The unique identifier of the user who deleted the Shared Env Var.
@@ -11926,8 +12564,6 @@ type NewEnvVar struct {
 	UpdatedAt *float64 `json:"updatedAt,omitempty"`
 	// The value of the Shared Env Var.
 	Value *string `json:"value,omitempty"`
-	// The value of the shared environment variable decrypted against api-secrets-management.
-	VsmValue *string `json:"vsmValue,omitempty"`
 	// The unique identifiers of the projects which the Shared Env Var is linked to.
 	ProjectID []string `json:"projectId,omitempty"`
 	// The type of this cosmos doc instance, if blank, assume secret.
@@ -11937,7 +12573,7 @@ type NewEnvVar struct {
 	// whether or not this env varible applies to custom environments
 	ApplyToAllCustomEnvironments *bool `json:"applyToAllCustomEnvironments,omitempty"`
 	// whether or not this env variable is decrypted
-	Decrypted bool `json:"decrypted"`
+	Decrypted *bool `json:"decrypted,omitempty"`
 	// A user provided comment that describes what this Shared Env Var is for.
 	Comment *string `json:"comment,omitempty"`
 	// The last editor full name or username.
@@ -11955,16 +12591,16 @@ func (n *NewEnvVar) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (o *NewEnvVar) GetCreated() time.Time {
+func (o *NewEnvVar) GetCreated() *time.Time {
 	if o == nil {
-		return time.Time{}
+		return nil
 	}
 	return o.Created
 }
 
-func (o *NewEnvVar) GetKey() string {
+func (o *NewEnvVar) GetKey() *string {
 	if o == nil {
-		return ""
+		return nil
 	}
 	return o.Key
 }
@@ -11976,9 +12612,9 @@ func (o *NewEnvVar) GetOwnerID() *string {
 	return o.OwnerID
 }
 
-func (o *NewEnvVar) GetID() string {
+func (o *NewEnvVar) GetID() *string {
 	if o == nil {
-		return ""
+		return nil
 	}
 	return o.ID
 }
@@ -12032,13 +12668,6 @@ func (o *NewEnvVar) GetValue() *string {
 	return o.Value
 }
 
-func (o *NewEnvVar) GetVsmValue() *string {
-	if o == nil {
-		return nil
-	}
-	return o.VsmValue
-}
-
 func (o *NewEnvVar) GetProjectID() []string {
 	if o == nil {
 		return nil
@@ -12067,9 +12696,9 @@ func (o *NewEnvVar) GetApplyToAllCustomEnvironments() *bool {
 	return o.ApplyToAllCustomEnvironments
 }
 
-func (o *NewEnvVar) GetDecrypted() bool {
+func (o *NewEnvVar) GetDecrypted() *bool {
 	if o == nil {
-		return false
+		return nil
 	}
 	return o.Decrypted
 }
@@ -12382,8 +13011,6 @@ type FiftySeven struct {
 	UpdatedAt *float64 `json:"updatedAt,omitempty"`
 	// The value of the Shared Env Var.
 	Value *string `json:"value,omitempty"`
-	// The value of the shared environment variable decrypted against api-secrets-management.
-	VsmValue *string `json:"vsmValue,omitempty"`
 	// The unique identifiers of the projects which the Shared Env Var is linked to.
 	ProjectID []string `json:"projectId,omitempty"`
 	// The type of this cosmos doc instance, if blank, assume secret.
@@ -12487,13 +13114,6 @@ func (o *FiftySeven) GetValue() *string {
 		return nil
 	}
 	return o.Value
-}
-
-func (o *FiftySeven) GetVsmValue() *string {
-	if o == nil {
-		return nil
-	}
-	return o.VsmValue
 }
 
 func (o *FiftySeven) GetProjectID() []string {
@@ -14865,51 +15485,51 @@ func (e *Action) UnmarshalJSON(data []byte) error {
 	}
 }
 
-// Two - The payload of the event, if requested.
-type Two struct {
+// Payload2 - The payload of the event, if requested.
+type Payload2 struct {
 	Action    Action `json:"action"`
 	ID        string `json:"id"`
 	Slug      string `json:"slug"`
 	ProjectID string `json:"projectId"`
 }
 
-func (o *Two) GetAction() Action {
+func (o *Payload2) GetAction() Action {
 	if o == nil {
 		return Action("")
 	}
 	return o.Action
 }
 
-func (o *Two) GetID() string {
+func (o *Payload2) GetID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ID
 }
 
-func (o *Two) GetSlug() string {
+func (o *Payload2) GetSlug() string {
 	if o == nil {
 		return ""
 	}
 	return o.Slug
 }
 
-func (o *Two) GetProjectID() string {
+func (o *Payload2) GetProjectID() string {
 	if o == nil {
 		return ""
 	}
 	return o.ProjectID
 }
 
-// One - The payload of the event, if requested.
-type One struct {
+// Payload1 - The payload of the event, if requested.
+type Payload1 struct {
 }
 
 type PayloadUnionType string
 
 const (
-	PayloadUnionTypeOne                      PayloadUnionType = "1"
-	PayloadUnionTypeTwo                      PayloadUnionType = "2"
+	PayloadUnionTypePayload1                 PayloadUnionType = "payload_1"
+	PayloadUnionTypePayload2                 PayloadUnionType = "payload_2"
 	PayloadUnionTypeThree                    PayloadUnionType = "3"
 	PayloadUnionTypeFour                     PayloadUnionType = "4"
 	PayloadUnionTypeFive                     PayloadUnionType = "5"
@@ -15055,11 +15675,12 @@ const (
 	PayloadUnionTypeOneHundredAndFortyFive   PayloadUnionType = "145"
 	PayloadUnionTypeOneHundredAndFortySix    PayloadUnionType = "146"
 	PayloadUnionTypeOneHundredAndFortySeven  PayloadUnionType = "147"
+	PayloadUnionTypeOneHundredAndFortyEight  PayloadUnionType = "148"
 )
 
 type Payload struct {
-	One                      *One
-	Two                      *Two
+	Payload1                 *Payload1
+	Payload2                 *Payload2
 	Three                    *Three
 	Four                     *Four
 	Five                     *Five
@@ -15205,25 +15826,26 @@ type Payload struct {
 	OneHundredAndFortyFive   *OneHundredAndFortyFive
 	OneHundredAndFortySix    *OneHundredAndFortySix
 	OneHundredAndFortySeven  *OneHundredAndFortySeven
+	OneHundredAndFortyEight  *OneHundredAndFortyEight
 
 	Type PayloadUnionType
 }
 
-func CreatePayloadOne(one One) Payload {
-	typ := PayloadUnionTypeOne
+func CreatePayloadPayload1(payload1 Payload1) Payload {
+	typ := PayloadUnionTypePayload1
 
 	return Payload{
-		One:  &one,
-		Type: typ,
+		Payload1: &payload1,
+		Type:     typ,
 	}
 }
 
-func CreatePayloadTwo(two Two) Payload {
-	typ := PayloadUnionTypeTwo
+func CreatePayloadPayload2(payload2 Payload2) Payload {
+	typ := PayloadUnionTypePayload2
 
 	return Payload{
-		Two:  &two,
-		Type: typ,
+		Payload2: &payload2,
+		Type:     typ,
 	}
 }
 
@@ -16532,68 +17154,21 @@ func CreatePayloadOneHundredAndFortySeven(oneHundredAndFortySeven OneHundredAndF
 	}
 }
 
+func CreatePayloadOneHundredAndFortyEight(oneHundredAndFortyEight OneHundredAndFortyEight) Payload {
+	typ := PayloadUnionTypeOneHundredAndFortyEight
+
+	return Payload{
+		OneHundredAndFortyEight: &oneHundredAndFortyEight,
+		Type:                    typ,
+	}
+}
+
 func (u *Payload) UnmarshalJSON(data []byte) error {
 
-	var one One = One{}
-	if err := utils.UnmarshalJSON(data, &one, "", true, true); err == nil {
-		u.One = &one
-		u.Type = PayloadUnionTypeOne
-		return nil
-	}
-
-	var ninetyThree NinetyThree = NinetyThree{}
-	if err := utils.UnmarshalJSON(data, &ninetyThree, "", true, true); err == nil {
-		u.NinetyThree = &ninetyThree
-		u.Type = PayloadUnionTypeNinetyThree
-		return nil
-	}
-
-	var oneHundredAndFourteen OneHundredAndFourteen = OneHundredAndFourteen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFourteen, "", true, true); err == nil {
-		u.OneHundredAndFourteen = &oneHundredAndFourteen
-		u.Type = PayloadUnionTypeOneHundredAndFourteen
-		return nil
-	}
-
-	var oneHundredAndNine OneHundredAndNine = OneHundredAndNine{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndNine, "", true, true); err == nil {
-		u.OneHundredAndNine = &oneHundredAndNine
-		u.Type = PayloadUnionTypeOneHundredAndNine
-		return nil
-	}
-
-	var eightyEight EightyEight = EightyEight{}
-	if err := utils.UnmarshalJSON(data, &eightyEight, "", true, true); err == nil {
-		u.EightyEight = &eightyEight
-		u.Type = PayloadUnionTypeEightyEight
-		return nil
-	}
-
-	var ninetyFive NinetyFive = NinetyFive{}
-	if err := utils.UnmarshalJSON(data, &ninetyFive, "", true, true); err == nil {
-		u.NinetyFive = &ninetyFive
-		u.Type = PayloadUnionTypeNinetyFive
-		return nil
-	}
-
-	var ninetySix NinetySix = NinetySix{}
-	if err := utils.UnmarshalJSON(data, &ninetySix, "", true, true); err == nil {
-		u.NinetySix = &ninetySix
-		u.Type = PayloadUnionTypeNinetySix
-		return nil
-	}
-
-	var oneHundredAndThirtyNine OneHundredAndThirtyNine = OneHundredAndThirtyNine{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyNine, "", true, true); err == nil {
-		u.OneHundredAndThirtyNine = &oneHundredAndThirtyNine
-		u.Type = PayloadUnionTypeOneHundredAndThirtyNine
-		return nil
-	}
-
-	var nine Nine = Nine{}
-	if err := utils.UnmarshalJSON(data, &nine, "", true, true); err == nil {
-		u.Nine = &nine
-		u.Type = PayloadUnionTypeNine
+	var payload1 Payload1 = Payload1{}
+	if err := utils.UnmarshalJSON(data, &payload1, "", true, true); err == nil {
+		u.Payload1 = &payload1
+		u.Type = PayloadUnionTypePayload1
 		return nil
 	}
 
@@ -16604,38 +17179,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirty OneHundredAndThirty = OneHundredAndThirty{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirty, "", true, true); err == nil {
-		u.OneHundredAndThirty = &oneHundredAndThirty
-		u.Type = PayloadUnionTypeOneHundredAndThirty
-		return nil
-	}
-
-	var ninetySeven NinetySeven = NinetySeven{}
-	if err := utils.UnmarshalJSON(data, &ninetySeven, "", true, true); err == nil {
-		u.NinetySeven = &ninetySeven
-		u.Type = PayloadUnionTypeNinetySeven
-		return nil
-	}
-
-	var ninetyNine NinetyNine = NinetyNine{}
-	if err := utils.UnmarshalJSON(data, &ninetyNine, "", true, true); err == nil {
-		u.NinetyNine = &ninetyNine
-		u.Type = PayloadUnionTypeNinetyNine
-		return nil
-	}
-
-	var thirtyThree ThirtyThree = ThirtyThree{}
-	if err := utils.UnmarshalJSON(data, &thirtyThree, "", true, true); err == nil {
-		u.ThirtyThree = &thirtyThree
-		u.Type = PayloadUnionTypeThirtyThree
-		return nil
-	}
-
-	var oneHundredAndOne OneHundredAndOne = OneHundredAndOne{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndOne, "", true, true); err == nil {
-		u.OneHundredAndOne = &oneHundredAndOne
-		u.Type = PayloadUnionTypeOneHundredAndOne
+	var ninetySix NinetySix = NinetySix{}
+	if err := utils.UnmarshalJSON(data, &ninetySix, "", true, true); err == nil {
+		u.NinetySix = &ninetySix
+		u.Type = PayloadUnionTypeNinetySix
 		return nil
 	}
 
@@ -16646,45 +17193,38 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndTen OneHundredAndTen = OneHundredAndTen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTen, "", true, true); err == nil {
-		u.OneHundredAndTen = &oneHundredAndTen
-		u.Type = PayloadUnionTypeOneHundredAndTen
+	var eightyEight EightyEight = EightyEight{}
+	if err := utils.UnmarshalJSON(data, &eightyEight, "", true, true); err == nil {
+		u.EightyEight = &eightyEight
+		u.Type = PayloadUnionTypeEightyEight
 		return nil
 	}
 
-	var oneHundredAndFortyThree OneHundredAndFortyThree = OneHundredAndFortyThree{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyThree, "", true, true); err == nil {
-		u.OneHundredAndFortyThree = &oneHundredAndFortyThree
-		u.Type = PayloadUnionTypeOneHundredAndFortyThree
+	var ninetyThree NinetyThree = NinetyThree{}
+	if err := utils.UnmarshalJSON(data, &ninetyThree, "", true, true); err == nil {
+		u.NinetyThree = &ninetyThree
+		u.Type = PayloadUnionTypeNinetyThree
 		return nil
 	}
 
-	var nineteen Nineteen = Nineteen{}
-	if err := utils.UnmarshalJSON(data, &nineteen, "", true, true); err == nil {
-		u.Nineteen = &nineteen
-		u.Type = PayloadUnionTypeNineteen
+	var ninetyFive NinetyFive = NinetyFive{}
+	if err := utils.UnmarshalJSON(data, &ninetyFive, "", true, true); err == nil {
+		u.NinetyFive = &ninetyFive
+		u.Type = PayloadUnionTypeNinetyFive
 		return nil
 	}
 
-	var three Three = Three{}
-	if err := utils.UnmarshalJSON(data, &three, "", true, true); err == nil {
-		u.Three = &three
-		u.Type = PayloadUnionTypeThree
+	var oneHundredAndForty OneHundredAndForty = OneHundredAndForty{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndForty, "", true, true); err == nil {
+		u.OneHundredAndForty = &oneHundredAndForty
+		u.Type = PayloadUnionTypeOneHundredAndForty
 		return nil
 	}
 
-	var oneHundredAndSixteen OneHundredAndSixteen = OneHundredAndSixteen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndSixteen, "", true, true); err == nil {
-		u.OneHundredAndSixteen = &oneHundredAndSixteen
-		u.Type = PayloadUnionTypeOneHundredAndSixteen
-		return nil
-	}
-
-	var oneHundredAndEleven OneHundredAndEleven = OneHundredAndEleven{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndEleven, "", true, true); err == nil {
-		u.OneHundredAndEleven = &oneHundredAndEleven
-		u.Type = PayloadUnionTypeOneHundredAndEleven
+	var ninetyNine NinetyNine = NinetyNine{}
+	if err := utils.UnmarshalJSON(data, &ninetyNine, "", true, true); err == nil {
+		u.NinetyNine = &ninetyNine
+		u.Type = PayloadUnionTypeNinetyNine
 		return nil
 	}
 
@@ -16695,45 +17235,87 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var seventeen Seventeen = Seventeen{}
-	if err := utils.UnmarshalJSON(data, &seventeen, "", true, true); err == nil {
-		u.Seventeen = &seventeen
-		u.Type = PayloadUnionTypeSeventeen
+	var oneHundredAndThirtyOne OneHundredAndThirtyOne = OneHundredAndThirtyOne{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyOne, "", true, true); err == nil {
+		u.OneHundredAndThirtyOne = &oneHundredAndThirtyOne
+		u.Type = PayloadUnionTypeOneHundredAndThirtyOne
 		return nil
 	}
 
-	var oneHundredAndThirtySix OneHundredAndThirtySix = OneHundredAndThirtySix{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtySix, "", true, true); err == nil {
-		u.OneHundredAndThirtySix = &oneHundredAndThirtySix
-		u.Type = PayloadUnionTypeOneHundredAndThirtySix
+	var three Three = Three{}
+	if err := utils.UnmarshalJSON(data, &three, "", true, true); err == nil {
+		u.Three = &three
+		u.Type = PayloadUnionTypeThree
 		return nil
 	}
 
-	var twentySix TwentySix = TwentySix{}
-	if err := utils.UnmarshalJSON(data, &twentySix, "", true, true); err == nil {
-		u.TwentySix = &twentySix
-		u.Type = PayloadUnionTypeTwentySix
+	var ninetySeven NinetySeven = NinetySeven{}
+	if err := utils.UnmarshalJSON(data, &ninetySeven, "", true, true); err == nil {
+		u.NinetySeven = &ninetySeven
+		u.Type = PayloadUnionTypeNinetySeven
 		return nil
 	}
 
-	var twentySeven TwentySeven = TwentySeven{}
-	if err := utils.UnmarshalJSON(data, &twentySeven, "", true, true); err == nil {
-		u.TwentySeven = &twentySeven
-		u.Type = PayloadUnionTypeTwentySeven
+	var nine Nine = Nine{}
+	if err := utils.UnmarshalJSON(data, &nine, "", true, true); err == nil {
+		u.Nine = &nine
+		u.Type = PayloadUnionTypeNine
 		return nil
 	}
 
-	var twentyThree TwentyThree = TwentyThree{}
-	if err := utils.UnmarshalJSON(data, &twentyThree, "", true, true); err == nil {
-		u.TwentyThree = &twentyThree
-		u.Type = PayloadUnionTypeTwentyThree
+	var oneHundredAndFortyFour OneHundredAndFortyFour = OneHundredAndFortyFour{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyFour, "", true, true); err == nil {
+		u.OneHundredAndFortyFour = &oneHundredAndFortyFour
+		u.Type = PayloadUnionTypeOneHundredAndFortyFour
 		return nil
 	}
 
-	var oneHundredAndThirteen OneHundredAndThirteen = OneHundredAndThirteen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirteen, "", true, true); err == nil {
-		u.OneHundredAndThirteen = &oneHundredAndThirteen
-		u.Type = PayloadUnionTypeOneHundredAndThirteen
+	var oneHundredAndOne OneHundredAndOne = OneHundredAndOne{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndOne, "", true, true); err == nil {
+		u.OneHundredAndOne = &oneHundredAndOne
+		u.Type = PayloadUnionTypeOneHundredAndOne
+		return nil
+	}
+
+	var oneHundredAndNine OneHundredAndNine = OneHundredAndNine{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndNine, "", true, true); err == nil {
+		u.OneHundredAndNine = &oneHundredAndNine
+		u.Type = PayloadUnionTypeOneHundredAndNine
+		return nil
+	}
+
+	var oneHundredAndTen OneHundredAndTen = OneHundredAndTen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTen, "", true, true); err == nil {
+		u.OneHundredAndTen = &oneHundredAndTen
+		u.Type = PayloadUnionTypeOneHundredAndTen
+		return nil
+	}
+
+	var nineteen Nineteen = Nineteen{}
+	if err := utils.UnmarshalJSON(data, &nineteen, "", true, true); err == nil {
+		u.Nineteen = &nineteen
+		u.Type = PayloadUnionTypeNineteen
+		return nil
+	}
+
+	var thirtyThree ThirtyThree = ThirtyThree{}
+	if err := utils.UnmarshalJSON(data, &thirtyThree, "", true, true); err == nil {
+		u.ThirtyThree = &thirtyThree
+		u.Type = PayloadUnionTypeThirtyThree
+		return nil
+	}
+
+	var oneHundredAndSeventeen OneHundredAndSeventeen = OneHundredAndSeventeen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndSeventeen, "", true, true); err == nil {
+		u.OneHundredAndSeventeen = &oneHundredAndSeventeen
+		u.Type = PayloadUnionTypeOneHundredAndSeventeen
+		return nil
+	}
+
+	var oneHundredAndEleven OneHundredAndEleven = OneHundredAndEleven{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndEleven, "", true, true); err == nil {
+		u.OneHundredAndEleven = &oneHundredAndEleven
+		u.Type = PayloadUnionTypeOneHundredAndEleven
 		return nil
 	}
 
@@ -16751,80 +17333,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndEighteen OneHundredAndEighteen = OneHundredAndEighteen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndEighteen, "", true, true); err == nil {
-		u.OneHundredAndEighteen = &oneHundredAndEighteen
-		u.Type = PayloadUnionTypeOneHundredAndEighteen
+	var seventeen Seventeen = Seventeen{}
+	if err := utils.UnmarshalJSON(data, &seventeen, "", true, true); err == nil {
+		u.Seventeen = &seventeen
+		u.Type = PayloadUnionTypeSeventeen
 		return nil
 	}
 
-	var eighteen Eighteen = Eighteen{}
-	if err := utils.UnmarshalJSON(data, &eighteen, "", true, true); err == nil {
-		u.Eighteen = &eighteen
-		u.Type = PayloadUnionTypeEighteen
+	var oneHundredAndThirty OneHundredAndThirty = OneHundredAndThirty{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirty, "", true, true); err == nil {
+		u.OneHundredAndThirty = &oneHundredAndThirty
+		u.Type = PayloadUnionTypeOneHundredAndThirty
 		return nil
 	}
 
-	var oneHundredAndNineteen OneHundredAndNineteen = OneHundredAndNineteen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndNineteen, "", true, true); err == nil {
-		u.OneHundredAndNineteen = &oneHundredAndNineteen
-		u.Type = PayloadUnionTypeOneHundredAndNineteen
-		return nil
-	}
-
-	var oneHundredAndSeven OneHundredAndSeven = OneHundredAndSeven{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndSeven, "", true, true); err == nil {
-		u.OneHundredAndSeven = &oneHundredAndSeven
-		u.Type = PayloadUnionTypeOneHundredAndSeven
-		return nil
-	}
-
-	var thirtySix ThirtySix = ThirtySix{}
-	if err := utils.UnmarshalJSON(data, &thirtySix, "", true, true); err == nil {
-		u.ThirtySix = &thirtySix
-		u.Type = PayloadUnionTypeThirtySix
-		return nil
-	}
-
-	var oneHundredAndTwentySeven OneHundredAndTwentySeven = OneHundredAndTwentySeven{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentySeven, "", true, true); err == nil {
-		u.OneHundredAndTwentySeven = &oneHundredAndTwentySeven
-		u.Type = PayloadUnionTypeOneHundredAndTwentySeven
-		return nil
-	}
-
-	var fourteen Fourteen = Fourteen{}
-	if err := utils.UnmarshalJSON(data, &fourteen, "", true, true); err == nil {
-		u.Fourteen = &fourteen
-		u.Type = PayloadUnionTypeFourteen
-		return nil
-	}
-
-	var oneHundred OneHundred = OneHundred{}
-	if err := utils.UnmarshalJSON(data, &oneHundred, "", true, true); err == nil {
-		u.OneHundred = &oneHundred
-		u.Type = PayloadUnionTypeOneHundred
-		return nil
-	}
-
-	var oneHundredAndTwentyEight OneHundredAndTwentyEight = OneHundredAndTwentyEight{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyEight, "", true, true); err == nil {
-		u.OneHundredAndTwentyEight = &oneHundredAndTwentyEight
-		u.Type = PayloadUnionTypeOneHundredAndTwentyEight
-		return nil
-	}
-
-	var fortyOne FortyOne = FortyOne{}
-	if err := utils.UnmarshalJSON(data, &fortyOne, "", true, true); err == nil {
-		u.FortyOne = &fortyOne
-		u.Type = PayloadUnionTypeFortyOne
-		return nil
-	}
-
-	var oneHundredAndTwentyNine OneHundredAndTwentyNine = OneHundredAndTwentyNine{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyNine, "", true, true); err == nil {
-		u.OneHundredAndTwentyNine = &oneHundredAndTwentyNine
-		u.Type = PayloadUnionTypeOneHundredAndTwentyNine
+	var twentySeven TwentySeven = TwentySeven{}
+	if err := utils.UnmarshalJSON(data, &twentySeven, "", true, true); err == nil {
+		u.TwentySeven = &twentySeven
+		u.Type = PayloadUnionTypeTwentySeven
 		return nil
 	}
 
@@ -16835,24 +17361,45 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndForty OneHundredAndForty = OneHundredAndForty{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndForty, "", true, true); err == nil {
-		u.OneHundredAndForty = &oneHundredAndForty
-		u.Type = PayloadUnionTypeOneHundredAndForty
+	var oneHundredAndFourteen OneHundredAndFourteen = OneHundredAndFourteen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFourteen, "", true, true); err == nil {
+		u.OneHundredAndFourteen = &oneHundredAndFourteen
+		u.Type = PayloadUnionTypeOneHundredAndFourteen
 		return nil
 	}
 
-	var fortyFive FortyFive = FortyFive{}
-	if err := utils.UnmarshalJSON(data, &fortyFive, "", true, true); err == nil {
-		u.FortyFive = &fortyFive
-		u.Type = PayloadUnionTypeFortyFive
+	var oneHundredAndThirteen OneHundredAndThirteen = OneHundredAndThirteen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirteen, "", true, true); err == nil {
+		u.OneHundredAndThirteen = &oneHundredAndThirteen
+		u.Type = PayloadUnionTypeOneHundredAndThirteen
 		return nil
 	}
 
-	var oneHundredAndFortyOne OneHundredAndFortyOne = OneHundredAndFortyOne{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyOne, "", true, true); err == nil {
-		u.OneHundredAndFortyOne = &oneHundredAndFortyOne
-		u.Type = PayloadUnionTypeOneHundredAndFortyOne
+	var twentyThree TwentyThree = TwentyThree{}
+	if err := utils.UnmarshalJSON(data, &twentyThree, "", true, true); err == nil {
+		u.TwentyThree = &twentyThree
+		u.Type = PayloadUnionTypeTwentyThree
+		return nil
+	}
+
+	var oneHundredAndSixteen OneHundredAndSixteen = OneHundredAndSixteen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndSixteen, "", true, true); err == nil {
+		u.OneHundredAndSixteen = &oneHundredAndSixteen
+		u.Type = PayloadUnionTypeOneHundredAndSixteen
+		return nil
+	}
+
+	var oneHundredAndNineteen OneHundredAndNineteen = OneHundredAndNineteen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndNineteen, "", true, true); err == nil {
+		u.OneHundredAndNineteen = &oneHundredAndNineteen
+		u.Type = PayloadUnionTypeOneHundredAndNineteen
+		return nil
+	}
+
+	var eighteen Eighteen = Eighteen{}
+	if err := utils.UnmarshalJSON(data, &eighteen, "", true, true); err == nil {
+		u.Eighteen = &eighteen
+		u.Type = PayloadUnionTypeEighteen
 		return nil
 	}
 
@@ -16863,10 +17410,101 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	var thirtySix ThirtySix = ThirtySix{}
+	if err := utils.UnmarshalJSON(data, &thirtySix, "", true, true); err == nil {
+		u.ThirtySix = &thirtySix
+		u.Type = PayloadUnionTypeThirtySix
+		return nil
+	}
+
+	var oneHundredAndSeven OneHundredAndSeven = OneHundredAndSeven{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndSeven, "", true, true); err == nil {
+		u.OneHundredAndSeven = &oneHundredAndSeven
+		u.Type = PayloadUnionTypeOneHundredAndSeven
+		return nil
+	}
+
+	var oneHundredAndTwenty OneHundredAndTwenty = OneHundredAndTwenty{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwenty, "", true, true); err == nil {
+		u.OneHundredAndTwenty = &oneHundredAndTwenty
+		u.Type = PayloadUnionTypeOneHundredAndTwenty
+		return nil
+	}
+
+	var oneHundredAndTwentyEight OneHundredAndTwentyEight = OneHundredAndTwentyEight{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyEight, "", true, true); err == nil {
+		u.OneHundredAndTwentyEight = &oneHundredAndTwentyEight
+		u.Type = PayloadUnionTypeOneHundredAndTwentyEight
+		return nil
+	}
+
+	var oneHundred OneHundred = OneHundred{}
+	if err := utils.UnmarshalJSON(data, &oneHundred, "", true, true); err == nil {
+		u.OneHundred = &oneHundred
+		u.Type = PayloadUnionTypeOneHundred
+		return nil
+	}
+
+	var fortyOne FortyOne = FortyOne{}
+	if err := utils.UnmarshalJSON(data, &fortyOne, "", true, true); err == nil {
+		u.FortyOne = &fortyOne
+		u.Type = PayloadUnionTypeFortyOne
+		return nil
+	}
+
+	var fourteen Fourteen = Fourteen{}
+	if err := utils.UnmarshalJSON(data, &fourteen, "", true, true); err == nil {
+		u.Fourteen = &fourteen
+		u.Type = PayloadUnionTypeFourteen
+		return nil
+	}
+
+	var oneHundredAndTwentyNine OneHundredAndTwentyNine = OneHundredAndTwentyNine{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyNine, "", true, true); err == nil {
+		u.OneHundredAndTwentyNine = &oneHundredAndTwentyNine
+		u.Type = PayloadUnionTypeOneHundredAndTwentyNine
+		return nil
+	}
+
+	var twentySix TwentySix = TwentySix{}
+	if err := utils.UnmarshalJSON(data, &twentySix, "", true, true); err == nil {
+		u.TwentySix = &twentySix
+		u.Type = PayloadUnionTypeTwentySix
+		return nil
+	}
+
+	var fortyFive FortyFive = FortyFive{}
+	if err := utils.UnmarshalJSON(data, &fortyFive, "", true, true); err == nil {
+		u.FortyFive = &fortyFive
+		u.Type = PayloadUnionTypeFortyFive
+		return nil
+	}
+
+	var oneHundredAndThirtySeven OneHundredAndThirtySeven = OneHundredAndThirtySeven{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtySeven, "", true, true); err == nil {
+		u.OneHundredAndThirtySeven = &oneHundredAndThirtySeven
+		u.Type = PayloadUnionTypeOneHundredAndThirtySeven
+		return nil
+	}
+
+	var oneHundredAndFortyOne OneHundredAndFortyOne = OneHundredAndFortyOne{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyOne, "", true, true); err == nil {
+		u.OneHundredAndFortyOne = &oneHundredAndFortyOne
+		u.Type = PayloadUnionTypeOneHundredAndFortyOne
+		return nil
+	}
+
 	var fortyEight FortyEight = FortyEight{}
 	if err := utils.UnmarshalJSON(data, &fortyEight, "", true, true); err == nil {
 		u.FortyEight = &fortyEight
 		u.Type = PayloadUnionTypeFortyEight
+		return nil
+	}
+
+	var oneHundredAndFortyTwo OneHundredAndFortyTwo = OneHundredAndFortyTwo{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyTwo, "", true, true); err == nil {
+		u.OneHundredAndFortyTwo = &oneHundredAndFortyTwo
+		u.Type = PayloadUnionTypeOneHundredAndFortyTwo
 		return nil
 	}
 
@@ -16884,17 +17522,17 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndFortyTwo OneHundredAndFortyTwo = OneHundredAndFortyTwo{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyTwo, "", true, true); err == nil {
-		u.OneHundredAndFortyTwo = &oneHundredAndFortyTwo
-		u.Type = PayloadUnionTypeOneHundredAndFortyTwo
-		return nil
-	}
-
 	var fiftyTwo FiftyTwo = FiftyTwo{}
 	if err := utils.UnmarshalJSON(data, &fiftyTwo, "", true, true); err == nil {
 		u.FiftyTwo = &fiftyTwo
 		u.Type = PayloadUnionTypeFiftyTwo
+		return nil
+	}
+
+	var oneHundredAndFortyThree OneHundredAndFortyThree = OneHundredAndFortyThree{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyThree, "", true, true); err == nil {
+		u.OneHundredAndFortyThree = &oneHundredAndFortyThree
+		u.Type = PayloadUnionTypeOneHundredAndFortyThree
 		return nil
 	}
 
@@ -16905,17 +17543,17 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var eightySix EightySix = EightySix{}
-	if err := utils.UnmarshalJSON(data, &eightySix, "", true, true); err == nil {
-		u.EightySix = &eightySix
-		u.Type = PayloadUnionTypeEightySix
-		return nil
-	}
-
 	var fiftyFive FiftyFive = FiftyFive{}
 	if err := utils.UnmarshalJSON(data, &fiftyFive, "", true, true); err == nil {
 		u.FiftyFive = &fiftyFive
 		u.Type = PayloadUnionTypeFiftyFive
+		return nil
+	}
+
+	var eightySix EightySix = EightySix{}
+	if err := utils.UnmarshalJSON(data, &eightySix, "", true, true); err == nil {
+		u.EightySix = &eightySix
+		u.Type = PayloadUnionTypeEightySix
 		return nil
 	}
 
@@ -16961,13 +17599,6 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var seventy Seventy = Seventy{}
-	if err := utils.UnmarshalJSON(data, &seventy, "", true, true); err == nil {
-		u.Seventy = &seventy
-		u.Type = PayloadUnionTypeSeventy
-		return nil
-	}
-
 	var sixtyThree SixtyThree = SixtyThree{}
 	if err := utils.UnmarshalJSON(data, &sixtyThree, "", true, true); err == nil {
 		u.SixtyThree = &sixtyThree
@@ -16975,17 +17606,31 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var thirtyEight ThirtyEight = ThirtyEight{}
-	if err := utils.UnmarshalJSON(data, &thirtyEight, "", true, true); err == nil {
-		u.ThirtyEight = &thirtyEight
-		u.Type = PayloadUnionTypeThirtyEight
+	var seventy Seventy = Seventy{}
+	if err := utils.UnmarshalJSON(data, &seventy, "", true, true); err == nil {
+		u.Seventy = &seventy
+		u.Type = PayloadUnionTypeSeventy
 		return nil
 	}
 
-	var oneHundredAndFive OneHundredAndFive = OneHundredAndFive{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFive, "", true, true); err == nil {
-		u.OneHundredAndFive = &oneHundredAndFive
-		u.Type = PayloadUnionTypeOneHundredAndFive
+	var thirtyNine ThirtyNine = ThirtyNine{}
+	if err := utils.UnmarshalJSON(data, &thirtyNine, "", true, true); err == nil {
+		u.ThirtyNine = &thirtyNine
+		u.Type = PayloadUnionTypeThirtyNine
+		return nil
+	}
+
+	var oneHundredAndEight OneHundredAndEight = OneHundredAndEight{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndEight, "", true, true); err == nil {
+		u.OneHundredAndEight = &oneHundredAndEight
+		u.Type = PayloadUnionTypeOneHundredAndEight
+		return nil
+	}
+
+	var oneHundredAndFortySix OneHundredAndFortySix = OneHundredAndFortySix{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortySix, "", true, true); err == nil {
+		u.OneHundredAndFortySix = &oneHundredAndFortySix
+		u.Type = PayloadUnionTypeOneHundredAndFortySix
 		return nil
 	}
 
@@ -16993,13 +17638,6 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyFive, "", true, true); err == nil {
 		u.OneHundredAndFortyFive = &oneHundredAndFortyFive
 		u.Type = PayloadUnionTypeOneHundredAndFortyFive
-		return nil
-	}
-
-	var oneHundredAndFortyFour OneHundredAndFortyFour = OneHundredAndFortyFour{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyFour, "", true, true); err == nil {
-		u.OneHundredAndFortyFour = &oneHundredAndFortyFour
-		u.Type = PayloadUnionTypeOneHundredAndFortyFour
 		return nil
 	}
 
@@ -17017,17 +17655,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirtySeven OneHundredAndThirtySeven = OneHundredAndThirtySeven{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtySeven, "", true, true); err == nil {
-		u.OneHundredAndThirtySeven = &oneHundredAndThirtySeven
-		u.Type = PayloadUnionTypeOneHundredAndThirtySeven
-		return nil
-	}
-
-	var sixtyOne SixtyOne = SixtyOne{}
-	if err := utils.UnmarshalJSON(data, &sixtyOne, "", true, true); err == nil {
-		u.SixtyOne = &sixtyOne
-		u.Type = PayloadUnionTypeSixtyOne
+	var oneHundredAndThirtyEight OneHundredAndThirtyEight = OneHundredAndThirtyEight{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyEight, "", true, true); err == nil {
+		u.OneHundredAndThirtyEight = &oneHundredAndThirtyEight
+		u.Type = PayloadUnionTypeOneHundredAndThirtyEight
 		return nil
 	}
 
@@ -17045,6 +17676,13 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	var oneHundredAndThirtyFive OneHundredAndThirtyFive = OneHundredAndThirtyFive{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyFive, "", true, true); err == nil {
+		u.OneHundredAndThirtyFive = &oneHundredAndThirtyFive
+		u.Type = PayloadUnionTypeOneHundredAndThirtyFive
+		return nil
+	}
+
 	var oneHundredAndThirtyFour OneHundredAndThirtyFour = OneHundredAndThirtyFour{}
 	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyFour, "", true, true); err == nil {
 		u.OneHundredAndThirtyFour = &oneHundredAndThirtyFour
@@ -17052,17 +17690,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirtyThree OneHundredAndThirtyThree = OneHundredAndThirtyThree{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyThree, "", true, true); err == nil {
-		u.OneHundredAndThirtyThree = &oneHundredAndThirtyThree
-		u.Type = PayloadUnionTypeOneHundredAndThirtyThree
-		return nil
-	}
-
-	var sixty Sixty = Sixty{}
-	if err := utils.UnmarshalJSON(data, &sixty, "", true, true); err == nil {
-		u.Sixty = &sixty
-		u.Type = PayloadUnionTypeSixty
+	var sixtyOne SixtyOne = SixtyOne{}
+	if err := utils.UnmarshalJSON(data, &sixtyOne, "", true, true); err == nil {
+		u.SixtyOne = &sixtyOne
+		u.Type = PayloadUnionTypeSixtyOne
 		return nil
 	}
 
@@ -17080,10 +17711,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirtyOne OneHundredAndThirtyOne = OneHundredAndThirtyOne{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyOne, "", true, true); err == nil {
-		u.OneHundredAndThirtyOne = &oneHundredAndThirtyOne
-		u.Type = PayloadUnionTypeOneHundredAndThirtyOne
+	var oneHundredAndThirtyTwo OneHundredAndThirtyTwo = OneHundredAndThirtyTwo{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyTwo, "", true, true); err == nil {
+		u.OneHundredAndThirtyTwo = &oneHundredAndThirtyTwo
+		u.Type = PayloadUnionTypeOneHundredAndThirtyTwo
 		return nil
 	}
 
@@ -17091,6 +17722,13 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 	if err := utils.UnmarshalJSON(data, &eighty, "", true, true); err == nil {
 		u.Eighty = &eighty
 		u.Type = PayloadUnionTypeEighty
+		return nil
+	}
+
+	var sixty Sixty = Sixty{}
+	if err := utils.UnmarshalJSON(data, &sixty, "", true, true); err == nil {
+		u.Sixty = &sixty
+		u.Type = PayloadUnionTypeSixty
 		return nil
 	}
 
@@ -17115,17 +17753,17 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndTwentyFour OneHundredAndTwentyFour = OneHundredAndTwentyFour{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyFour, "", true, true); err == nil {
-		u.OneHundredAndTwentyFour = &oneHundredAndTwentyFour
-		u.Type = PayloadUnionTypeOneHundredAndTwentyFour
-		return nil
-	}
-
 	var eightyFive EightyFive = EightyFive{}
 	if err := utils.UnmarshalJSON(data, &eightyFive, "", true, true); err == nil {
 		u.EightyFive = &eightyFive
 		u.Type = PayloadUnionTypeEightyFive
+		return nil
+	}
+
+	var oneHundredAndTwentyFive OneHundredAndTwentyFive = OneHundredAndTwentyFive{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyFive, "", true, true); err == nil {
+		u.OneHundredAndTwentyFive = &oneHundredAndTwentyFive
+		u.Type = PayloadUnionTypeOneHundredAndTwentyFive
 		return nil
 	}
 
@@ -17143,17 +17781,17 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var fiftyOne FiftyOne = FiftyOne{}
-	if err := utils.UnmarshalJSON(data, &fiftyOne, "", true, true); err == nil {
-		u.FiftyOne = &fiftyOne
-		u.Type = PayloadUnionTypeFiftyOne
-		return nil
-	}
-
 	var eightyNine EightyNine = EightyNine{}
 	if err := utils.UnmarshalJSON(data, &eightyNine, "", true, true); err == nil {
 		u.EightyNine = &eightyNine
 		u.Type = PayloadUnionTypeEightyNine
+		return nil
+	}
+
+	var fiftyOne FiftyOne = FiftyOne{}
+	if err := utils.UnmarshalJSON(data, &fiftyOne, "", true, true); err == nil {
+		u.FiftyOne = &fiftyOne
+		u.Type = PayloadUnionTypeFiftyOne
 		return nil
 	}
 
@@ -17164,13 +17802,6 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var fortyNine FortyNine = FortyNine{}
-	if err := utils.UnmarshalJSON(data, &fortyNine, "", true, true); err == nil {
-		u.FortyNine = &fortyNine
-		u.Type = PayloadUnionTypeFortyNine
-		return nil
-	}
-
 	var ninetyTwo NinetyTwo = NinetyTwo{}
 	if err := utils.UnmarshalJSON(data, &ninetyTwo, "", true, true); err == nil {
 		u.NinetyTwo = &ninetyTwo
@@ -17178,17 +17809,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	var fortyNine FortyNine = FortyNine{}
+	if err := utils.UnmarshalJSON(data, &fortyNine, "", true, true); err == nil {
+		u.FortyNine = &fortyNine
+		u.Type = PayloadUnionTypeFortyNine
+		return nil
+	}
+
+	var oneHundredAndEighteen OneHundredAndEighteen = OneHundredAndEighteen{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndEighteen, "", true, true); err == nil {
+		u.OneHundredAndEighteen = &oneHundredAndEighteen
+		u.Type = PayloadUnionTypeOneHundredAndEighteen
+		return nil
+	}
+
 	var fortySeven FortySeven = FortySeven{}
 	if err := utils.UnmarshalJSON(data, &fortySeven, "", true, true); err == nil {
 		u.FortySeven = &fortySeven
 		u.Type = PayloadUnionTypeFortySeven
-		return nil
-	}
-
-	var oneHundredAndSeventeen OneHundredAndSeventeen = OneHundredAndSeventeen{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndSeventeen, "", true, true); err == nil {
-		u.OneHundredAndSeventeen = &oneHundredAndSeventeen
-		u.Type = PayloadUnionTypeOneHundredAndSeventeen
 		return nil
 	}
 
@@ -17227,10 +17865,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var thirtyNine ThirtyNine = ThirtyNine{}
-	if err := utils.UnmarshalJSON(data, &thirtyNine, "", true, true); err == nil {
-		u.ThirtyNine = &thirtyNine
-		u.Type = PayloadUnionTypeThirtyNine
+	var thirtyEight ThirtyEight = ThirtyEight{}
+	if err := utils.UnmarshalJSON(data, &thirtyEight, "", true, true); err == nil {
+		u.ThirtyEight = &thirtyEight
+		u.Type = PayloadUnionTypeThirtyEight
 		return nil
 	}
 
@@ -17248,13 +17886,6 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndEight OneHundredAndEight = OneHundredAndEight{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndEight, "", true, true); err == nil {
-		u.OneHundredAndEight = &oneHundredAndEight
-		u.Type = PayloadUnionTypeOneHundredAndEight
-		return nil
-	}
-
 	var thirtyFive ThirtyFive = ThirtyFive{}
 	if err := utils.UnmarshalJSON(data, &thirtyFive, "", true, true); err == nil {
 		u.ThirtyFive = &thirtyFive
@@ -17262,10 +17893,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndTwentyFive OneHundredAndTwentyFive = OneHundredAndTwentyFive{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyFive, "", true, true); err == nil {
-		u.OneHundredAndTwentyFive = &oneHundredAndTwentyFive
-		u.Type = PayloadUnionTypeOneHundredAndTwentyFive
+	var oneHundredAndFive OneHundredAndFive = OneHundredAndFive{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFive, "", true, true); err == nil {
+		u.OneHundredAndFive = &oneHundredAndFive
+		u.Type = PayloadUnionTypeOneHundredAndFive
 		return nil
 	}
 
@@ -17276,24 +17907,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndFortySix OneHundredAndFortySix = OneHundredAndFortySix{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortySix, "", true, true); err == nil {
-		u.OneHundredAndFortySix = &oneHundredAndFortySix
-		u.Type = PayloadUnionTypeOneHundredAndFortySix
+	var oneHundredAndTwentySeven OneHundredAndTwentySeven = OneHundredAndTwentySeven{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentySeven, "", true, true); err == nil {
+		u.OneHundredAndTwentySeven = &oneHundredAndTwentySeven
+		u.Type = PayloadUnionTypeOneHundredAndTwentySeven
 		return nil
 	}
 
-	var two Two = Two{}
-	if err := utils.UnmarshalJSON(data, &two, "", true, true); err == nil {
-		u.Two = &two
-		u.Type = PayloadUnionTypeTwo
+	var oneHundredAndFortySeven OneHundredAndFortySeven = OneHundredAndFortySeven{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortySeven, "", true, true); err == nil {
+		u.OneHundredAndFortySeven = &oneHundredAndFortySeven
+		u.Type = PayloadUnionTypeOneHundredAndFortySeven
 		return nil
 	}
 
-	var oneHundredAndTwo OneHundredAndTwo = OneHundredAndTwo{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwo, "", true, true); err == nil {
-		u.OneHundredAndTwo = &oneHundredAndTwo
-		u.Type = PayloadUnionTypeOneHundredAndTwo
+	var payload2 Payload2 = Payload2{}
+	if err := utils.UnmarshalJSON(data, &payload2, "", true, true); err == nil {
+		u.Payload2 = &payload2
+		u.Type = PayloadUnionTypePayload2
 		return nil
 	}
 
@@ -17304,17 +17935,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirtyEight OneHundredAndThirtyEight = OneHundredAndThirtyEight{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyEight, "", true, true); err == nil {
-		u.OneHundredAndThirtyEight = &oneHundredAndThirtyEight
-		u.Type = PayloadUnionTypeOneHundredAndThirtyEight
+	var oneHundredAndTwo OneHundredAndTwo = OneHundredAndTwo{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwo, "", true, true); err == nil {
+		u.OneHundredAndTwo = &oneHundredAndTwo
+		u.Type = PayloadUnionTypeOneHundredAndTwo
 		return nil
 	}
 
-	var oneHundredAndThirtyFive OneHundredAndThirtyFive = OneHundredAndThirtyFive{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyFive, "", true, true); err == nil {
-		u.OneHundredAndThirtyFive = &oneHundredAndThirtyFive
-		u.Type = PayloadUnionTypeOneHundredAndThirtyFive
+	var oneHundredAndThirtyNine OneHundredAndThirtyNine = OneHundredAndThirtyNine{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyNine, "", true, true); err == nil {
+		u.OneHundredAndThirtyNine = &oneHundredAndThirtyNine
+		u.Type = PayloadUnionTypeOneHundredAndThirtyNine
+		return nil
+	}
+
+	var oneHundredAndThirtySix OneHundredAndThirtySix = OneHundredAndThirtySix{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtySix, "", true, true); err == nil {
+		u.OneHundredAndThirtySix = &oneHundredAndThirtySix
+		u.Type = PayloadUnionTypeOneHundredAndThirtySix
 		return nil
 	}
 
@@ -17367,10 +18005,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndThirtyTwo OneHundredAndThirtyTwo = OneHundredAndThirtyTwo{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyTwo, "", true, true); err == nil {
-		u.OneHundredAndThirtyTwo = &oneHundredAndThirtyTwo
-		u.Type = PayloadUnionTypeOneHundredAndThirtyTwo
+	var oneHundredAndThirtyThree OneHundredAndThirtyThree = OneHundredAndThirtyThree{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndThirtyThree, "", true, true); err == nil {
+		u.OneHundredAndThirtyThree = &oneHundredAndThirtyThree
+		u.Type = PayloadUnionTypeOneHundredAndThirtyThree
 		return nil
 	}
 
@@ -17430,31 +18068,10 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndTwentyTwo OneHundredAndTwentyTwo = OneHundredAndTwentyTwo{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyTwo, "", true, true); err == nil {
-		u.OneHundredAndTwentyTwo = &oneHundredAndTwentyTwo
-		u.Type = PayloadUnionTypeOneHundredAndTwentyTwo
-		return nil
-	}
-
-	var oneHundredAndTwentyOne OneHundredAndTwentyOne = OneHundredAndTwentyOne{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyOne, "", true, true); err == nil {
-		u.OneHundredAndTwentyOne = &oneHundredAndTwentyOne
-		u.Type = PayloadUnionTypeOneHundredAndTwentyOne
-		return nil
-	}
-
-	var oneHundredAndFortySeven OneHundredAndFortySeven = OneHundredAndFortySeven{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFortySeven, "", true, true); err == nil {
-		u.OneHundredAndFortySeven = &oneHundredAndFortySeven
-		u.Type = PayloadUnionTypeOneHundredAndFortySeven
-		return nil
-	}
-
-	var oneHundredAndFour OneHundredAndFour = OneHundredAndFour{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndFour, "", true, true); err == nil {
-		u.OneHundredAndFour = &oneHundredAndFour
-		u.Type = PayloadUnionTypeOneHundredAndFour
+	var sixtyFive SixtyFive = SixtyFive{}
+	if err := utils.UnmarshalJSON(data, &sixtyFive, "", true, true); err == nil {
+		u.SixtyFive = &sixtyFive
+		u.Type = PayloadUnionTypeSixtyFive
 		return nil
 	}
 
@@ -17465,24 +18082,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	var oneHundredAndFortyEight OneHundredAndFortyEight = OneHundredAndFortyEight{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFortyEight, "", true, true); err == nil {
+		u.OneHundredAndFortyEight = &oneHundredAndFortyEight
+		u.Type = PayloadUnionTypeOneHundredAndFortyEight
+		return nil
+	}
+
+	var oneHundredAndFour OneHundredAndFour = OneHundredAndFour{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndFour, "", true, true); err == nil {
+		u.OneHundredAndFour = &oneHundredAndFour
+		u.Type = PayloadUnionTypeOneHundredAndFour
+		return nil
+	}
+
 	var ninetyEight NinetyEight = NinetyEight{}
 	if err := utils.UnmarshalJSON(data, &ninetyEight, "", true, true); err == nil {
 		u.NinetyEight = &ninetyEight
 		u.Type = PayloadUnionTypeNinetyEight
-		return nil
-	}
-
-	var sixtyFive SixtyFive = SixtyFive{}
-	if err := utils.UnmarshalJSON(data, &sixtyFive, "", true, true); err == nil {
-		u.SixtyFive = &sixtyFive
-		u.Type = PayloadUnionTypeSixtyFive
-		return nil
-	}
-
-	var sixtyTwo SixtyTwo = SixtyTwo{}
-	if err := utils.UnmarshalJSON(data, &sixtyTwo, "", true, true); err == nil {
-		u.SixtyTwo = &sixtyTwo
-		u.Type = PayloadUnionTypeSixtyTwo
 		return nil
 	}
 
@@ -17493,10 +18110,24 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var sixtySeven SixtySeven = SixtySeven{}
-	if err := utils.UnmarshalJSON(data, &sixtySeven, "", true, true); err == nil {
-		u.SixtySeven = &sixtySeven
-		u.Type = PayloadUnionTypeSixtySeven
+	var sixtyTwo SixtyTwo = SixtyTwo{}
+	if err := utils.UnmarshalJSON(data, &sixtyTwo, "", true, true); err == nil {
+		u.SixtyTwo = &sixtyTwo
+		u.Type = PayloadUnionTypeSixtyTwo
+		return nil
+	}
+
+	var oneHundredAndTwentyTwo OneHundredAndTwentyTwo = OneHundredAndTwentyTwo{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyTwo, "", true, true); err == nil {
+		u.OneHundredAndTwentyTwo = &oneHundredAndTwentyTwo
+		u.Type = PayloadUnionTypeOneHundredAndTwentyTwo
+		return nil
+	}
+
+	var oneHundredAndTwentyFour OneHundredAndTwentyFour = OneHundredAndTwentyFour{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyFour, "", true, true); err == nil {
+		u.OneHundredAndTwentyFour = &oneHundredAndTwentyFour
+		u.Type = PayloadUnionTypeOneHundredAndTwentyFour
 		return nil
 	}
 
@@ -17521,10 +18152,17 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var oneHundredAndTwenty OneHundredAndTwenty = OneHundredAndTwenty{}
-	if err := utils.UnmarshalJSON(data, &oneHundredAndTwenty, "", true, true); err == nil {
-		u.OneHundredAndTwenty = &oneHundredAndTwenty
-		u.Type = PayloadUnionTypeOneHundredAndTwenty
+	var sixtySeven SixtySeven = SixtySeven{}
+	if err := utils.UnmarshalJSON(data, &sixtySeven, "", true, true); err == nil {
+		u.SixtySeven = &sixtySeven
+		u.Type = PayloadUnionTypeSixtySeven
+		return nil
+	}
+
+	var oneHundredAndTwentyOne OneHundredAndTwentyOne = OneHundredAndTwentyOne{}
+	if err := utils.UnmarshalJSON(data, &oneHundredAndTwentyOne, "", true, true); err == nil {
+		u.OneHundredAndTwentyOne = &oneHundredAndTwentyOne
+		u.Type = PayloadUnionTypeOneHundredAndTwentyOne
 		return nil
 	}
 
@@ -17567,12 +18205,12 @@ func (u *Payload) UnmarshalJSON(data []byte) error {
 }
 
 func (u Payload) MarshalJSON() ([]byte, error) {
-	if u.One != nil {
-		return utils.MarshalJSON(u.One, "", true)
+	if u.Payload1 != nil {
+		return utils.MarshalJSON(u.Payload1, "", true)
 	}
 
-	if u.Two != nil {
-		return utils.MarshalJSON(u.Two, "", true)
+	if u.Payload2 != nil {
+		return utils.MarshalJSON(u.Payload2, "", true)
 	}
 
 	if u.Three != nil {
@@ -18155,6 +18793,10 @@ func (u Payload) MarshalJSON() ([]byte, error) {
 		return utils.MarshalJSON(u.OneHundredAndFortySeven, "", true)
 	}
 
+	if u.OneHundredAndFortyEight != nil {
+		return utils.MarshalJSON(u.OneHundredAndFortyEight, "", true)
+	}
+
 	return nil, errors.New("could not marshal union type Payload: all fields are null")
 }
 
@@ -18168,10 +18810,17 @@ type UserEvent struct {
 	Entities []Entities `json:"entities"`
 	// Timestamp (in milliseconds) of when the event was generated.
 	CreatedAt float64 `json:"createdAt"`
-	// Metadata for the User who generated the event.
-	User *User `json:"user,omitempty"`
-	// The unique identifier of the User who generated the event.
-	UserID  string   `json:"userId"`
+	// Metadata for {@link userId}.
+	User      *User      `json:"user,omitempty"`
+	Principal *Principal `json:"principal,omitempty"`
+	// Metadata for {@link viaIds}.
+	Via []Via `json:"via,omitempty"`
+	// When the principal who generated the event is a user, this is their ID; otherwise, it is empty.
+	UserID string `json:"userId"`
+	// The ID of the principal who generated the event. The principal is typically a user, but it could also be an app, an integration, etc. The principal may have delegated its authority to an acting party, and so {@link viaIds} should be checked as well.
+	PrincipalID string `json:"principalId"`
+	// If the principal delegated its authority (for example, a user delegating to an app), then this array contains the ID of the current actor. For example, if `principalId` is "user123" and `viaIds` is `["app456"]`, we can say the event was triggered by - "app456 on behalf of user123", or - "user123 via app4556". Both are equivalent. Arbitrarily long chains of delegation can be represented. For example, if `principalId` is "user123" and `viaIds` is `["service1", "service2"]`, we can say the event was triggered by "user123 via service1 via service2".
+	ViaIds  []string `json:"viaIds,omitempty"`
 	Payload *Payload `json:"payload,omitempty"`
 }
 
@@ -18210,11 +18859,39 @@ func (o *UserEvent) GetUser() *User {
 	return o.User
 }
 
+func (o *UserEvent) GetPrincipal() *Principal {
+	if o == nil {
+		return nil
+	}
+	return o.Principal
+}
+
+func (o *UserEvent) GetVia() []Via {
+	if o == nil {
+		return nil
+	}
+	return o.Via
+}
+
 func (o *UserEvent) GetUserID() string {
 	if o == nil {
 		return ""
 	}
 	return o.UserID
+}
+
+func (o *UserEvent) GetPrincipalID() string {
+	if o == nil {
+		return ""
+	}
+	return o.PrincipalID
+}
+
+func (o *UserEvent) GetViaIds() []string {
+	if o == nil {
+		return nil
+	}
+	return o.ViaIds
 }
 
 func (o *UserEvent) GetPayload() *Payload {

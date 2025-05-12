@@ -11,5 +11,5 @@ let value: PayloadImportFlowGitProvider = "bitbucket";
 ## Values
 
 ```typescript
-"github" | "gitlab" | "bitbucket"
+"github" | "gitlab" | "bitbucket" | "github-custom-host"
 ```

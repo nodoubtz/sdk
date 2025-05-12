@@ -6,11 +6,11 @@
 import { UpdateProjectDataCacheProjectsResponse200ApplicationJSONType } from "@vercel/sdk/models/updateprojectdatacacheop.js";
 
 let value: UpdateProjectDataCacheProjectsResponse200ApplicationJSONType =
-  "equals";
+  "system";
 ```
 
 ## Values
 
 ```typescript
-"endsWith" | "startsWith" | "equals"
+"secret" | "system" | "encrypted" | "plain" | "sensitive"
 ```
